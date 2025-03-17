@@ -8,6 +8,8 @@ import SplashCursor1 from "./pages/Cursor/Splashcursor";
 import JoinNow from "./pages/JoinNow/JoinNow";
 import BackgroundWrapper from "./pages/Background_square/Square_bg";
 import BentoGrid from "../../expense/src/pages/Features/BentoGrid"
+import Sidebar from "./pages/Dashbord/Sidebar/Sidebar";
+import Demo  from "./pages/Features/Demo";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -20,11 +22,13 @@ function App() {
       {/* Ensure content is layered above */}
       <div className="content-wrapper">
         <Router>
-          <SplashCursor1 />
+          {/* <SplashCursor1 /> */}
           <Navbar />
           <HeroScrollDemo />
           <BentoGrid/>
+          {/* <Demo/> */}
           <JoinNow />
+          <Sidebar />
         </Router>
       </div>
     </div>

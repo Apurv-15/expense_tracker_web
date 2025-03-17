@@ -8,32 +8,33 @@ import { IconBrandYoutubeFilled } from "@tabler/icons-react";
 export default function BentoGrid() {
   const features = [
     {
-      title: "Track issues effectively",
+      title: "Track Expenses Effectively",
       description:
-        "Track and manage your project issues with ease using our intuitive interface.",
+        "Track and manage your expenses with ease using our intuitive interface.",
       skeleton: <SkeletonOne />,
       className:
-        "col-span-1 lg:col-span-4 border-b lg:border-r dark:border-neutral-800",
+        "col-span-1 lg:col-span-4 border-b lg:border-r dark:border-neutral-800 border-2 border-white",
+        
     },
     {
-      title: "Capture pictures with AI",
+      title: "Add your budget effectively",
       description:
-        "Capture stunning photos effortlessly using our advanced AI technology.",
+        "Add your budget and track your expenses with ease.",
       skeleton: <SkeletonTwo />,
       className: "border-b col-span-1 lg:col-span-2 dark:border-neutral-800",
     },
     {
-      title: "Watch our AI on YouTube",
+      title: "Convinient and Real time Database update ",
       description:
-        "Whether its you or Tyler Durden, you can get to know about our product on YouTube",
+        " No need to worry about your budget now onwards... ",
       skeleton: <SkeletonThree />,
       className:
         "col-span-1 lg:col-span-3 lg:border-r  dark:border-neutral-800",
     },
     {
-      title: "Deploy in seconds",
+      title: "Comming soon",
       description:
-        "With our blazing fast, state of the art, cutting edge, we are so back cloud services (read AWS) - you can deploy your model in seconds.",
+        " ",
       skeleton: <SkeletonFour />,
       className: "col-span-1 lg:col-span-3 border-b lg:border-none",
     },
@@ -84,7 +85,7 @@ const FeatureTitle = ({
 }) => {
   return (
     <p
-      className=" max-w-5xl mx-auto text-left tracking-tight text-black dark:text-white text-xl md:text-2xl md:leading-snug">
+      className=" max-w-5xl mx-auto text-left tracking-tight text-black dark:text-white text-xl md:text-2xl md:leading-snug" >
       {children}
     </p>
   );
@@ -109,7 +110,7 @@ export const SkeletonOne = () => {
   return (
     <div className="relative flex py-8 px-2 gap-10 h-full">
       <div
-        className="w-full  p-5  mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full">
+        className="w-full  p-5  mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full" >
         <div className="flex flex-1 w-full h-full flex-col space-y-2  ">
           <img
             src="https://assets.justinmind.com/wp-content/uploads/2024/06/dashboard-examples-vertical.png"
