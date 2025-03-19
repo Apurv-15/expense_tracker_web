@@ -109,9 +109,12 @@ import {
   NavBtnLink,
 } from "./Navbar_element";
 import "./Navbar.css";
+import { useAuth0 } from "@auth0/auth0-react";
+import logo from "../../assets/flowtracklogo.png";
 
 const Navbar = () => {
   const [showNav, setShowNav] = useState(false);
+  const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
 
   const toggleNav = () => {
     setShowNav(!showNav);
@@ -121,23 +124,37 @@ const Navbar = () => {
     <>
       <Nav className="navbar">
         <NavLink to="/" className="nav-logo">
-          <h1>KAHANIKARS</h1>
+        <img src={logo} alt="logo" className="h-5 w-auto mr-2" />
         </NavLink>
         <Bars onClick={toggleNav} />
         <NavMenu $showNav={showNav}>
           <NavLink to="/work" className="nav-item">
-            Work
+            About Us
           </NavLink>
           <NavLink to="/policy" className="nav-item">
-            Policy
+            DashBoard
           </NavLink>
-          <NavLink to="/collab" className="nav-item">
+          {/* <NavLink to="/collab" className="nav-item">
             Need a Dev?
-          </NavLink>
+          </NavLink> */}
         </NavMenu>
-        <NavBtn className="nav-btn">
-          <NavBtnLink to="/login">Log In/Register</NavBtnLink>
-        </NavBtn>
+        {isAuthenticated ? (
+          <NavBtn className="nav-btn">
+            <NavBtnLink
+              onClick={() =>
+                logout({ logoutParams: { returnTo: window.location.origin } })
+              }
+            >
+              Log Out
+            </NavBtnLink>
+          </NavBtn>
+        ) : (
+          <NavBtn className="nav-btn">
+            <NavBtnLink onClick={() => loginWithRedirect()}>
+              Log In/Register
+            </NavBtnLink>
+          </NavBtn>
+        )}
       </Nav>
     </>
   );

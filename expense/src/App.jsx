@@ -10,9 +10,25 @@ import BackgroundWrapper from "./pages/Background_square/Square_bg";
 import BentoGrid from "../../expense/src/pages/Features/BentoGrid"
 import Sidebar from "./pages/Dashbord/Sidebar/Sidebar";
 import Demo  from "./pages/Features/Demo";
+import { gsap } from "gsap";
+import { useEffect } from "react";
 
 function App() {
+  
   const [count, setCount] = useState(0);
+  useEffect(() => {
+    // Set up ScrollTrigger animations
+    gsap.from(".HeroScrollDemo", {
+      opacity: 0,
+      y: 50,
+      scrollTrigger: {
+        trigger: ".HeroScrollDemo",
+        start: "top center",
+        end: "bottom center",
+        scrub: true,
+      },
+    });
+  }, []);
 
   return (
     <div className="app-container">
