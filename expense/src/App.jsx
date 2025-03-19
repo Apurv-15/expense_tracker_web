@@ -12,6 +12,9 @@ import Sidebar from "./pages/Dashbord/Sidebar/Sidebar";
 import Demo  from "./pages/Features/Demo";
 import { gsap } from "gsap";
 import { useEffect } from "react";
+import DashboardNav from "./pages/Dashboard_pages/home";
+import { UserProvider } from './pages/Dashboard_pages/context/UserContext';
+
 
 function App() {
   
@@ -32,20 +35,26 @@ function App() {
 
   return (
     <div className="app-container">
+      
       {/* Background grid */}
-      <BackgroundWrapper />
+      {/* <BackgroundWrapper /> */}
 
       {/* Ensure content is layered above */}
       <div className="content-wrapper">
+        <UserProvider>
         <Router>
           {/* <SplashCursor1 /> */}
           <Navbar />
-          <HeroScrollDemo />
-          <BentoGrid/>
+          {/* <HeroScrollDemo /> */}
+          {/* <BentoGrid/> */}
           {/* <Demo/> */}
-          <JoinNow />
+          {/* <JoinNow /> */}
           <Sidebar />
+
+        
+          
         </Router>
+        </UserProvider>
       </div>
     </div>
   );

@@ -36,9 +36,9 @@ const Sidebar = ({ className }) => {
 
   return (
     <div className={`h-screen flex flex-col border-r bg-gray-50 transition-all ${collapsed ? 'w-16' : 'w-60'} ${className}`}>
-      <div className="flex items-center px-4 py-5">
+      {/* <div className="flex items-center px-4 py-5">
         {!collapsed && <h2 className="text-xl font-semibold">FinTrack</h2>}
-      </div>
+      </div> */}
       <button
         className="absolute -right-3 top-6 h-6 w-6 rounded-full border bg-white shadow-md"
         onClick={toggleSidebar}
