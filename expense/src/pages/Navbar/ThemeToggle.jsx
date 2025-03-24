@@ -1,42 +1,24 @@
-
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Button } from "../../Ui/button";
+import { useTheme } from "./Themeprovider";
+import { Toggle } from "./Toogle";
 
-const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    // Check initial theme
-    if (document.documentElement.classList.contains("dark")) {
-      setIsDark(true);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove("dark");
-      setIsDark(false);
-    } else {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    }
-  };
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTheme}
-      className="w-9 h-9 rounded-full"
+    <Toggle
+      variant="outline"
+      size="sm"
+      pressed={theme === "dark"}
+      onPressedChange={(pressed) => setTheme(pressed ? "dark" : "light")}
+      aria-label="Toggle theme"
+      className="rounded-full w-9 p-0"
     >
-      {isDark ? (
-        <Sun className="h-4 w-4" />
+      {theme === "dark" ? (
+        <Moon className="h-4 w-4 text-blue-400" />
       ) : (
-        <Moon className="h-4 w-4" />
+        <Sun className="h-4 w-4 text-yellow-500" />
       )}
-    </Button>
+    </Toggle>
   );
-};
-
-export default ThemeToggle;
+}

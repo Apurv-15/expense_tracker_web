@@ -1,162 +1,85 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   Nav,
-//   NavLink,
-//   Bars,
-//   NavMenu,
-//   NavBtn,
-//   NavBtnLink,
-// } from "./Navbar_element";
-// import { useAuth0 } from "@auth0/auth0-react";
-// import "./Navbar.css";
-
-// const Navbar = () => {
-//   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
-//   const [showNav, setShowNav] = useState(false);
-//   const [email, setEmail] = useState("");
-//   const [name, setName] = useState("");
-
-//   const toggleNav = () => {
-//     setShowNav(!showNav);
-//   };
-
-//   useEffect(() => {
-//     if (user) {
-//       setEmail(user?.email);
-//       setName(user?.name);
-//     }
-//   }, [user]);
-
-//   // useEffect(() => {
-//   //   if (email && name) {
-//   //     sendUserData();
-//   //   }
-//   // }, [email, name]);
-
-//   // const sendUserData = async () => {
-//   //   const res = await fetch("http://localhost:5000/sendemail", {
-//   //     method: "POST",
-//   //     headers: {
-//   //       "Content-Type": "application/json",
-//   //     },
-//   //     body: JSON.stringify({
-//   //       email,
-//   //       name,
-//   //     }),
-//   //   });
-//   //   console.log(res);
-//   // };
-
-//   return (
-//     <>
-//       <Nav className="navbar">
-//         <NavLink to="/" className="nav-logo">
-//           <h1>KAHANIKARS</h1>
-//         </NavLink>
-//         <Bars onClick={toggleNav} />
-//         <NavMenu showNav={showNav}>
-//           <NavLink to="/work" className="nav-item">
-//             Work
-//           </NavLink>
-//           <NavLink to="/policy" className="nav-item">
-//             Policy
-//           </NavLink>
-//           <NavLink to="/collab" className="nav-item">
-//             Need a Dev?
-//           </NavLink>
-//           {/* <NavLink to="/contact" className="nav-item">
-//             Contact Us
-//           </NavLink> */}
-//           {/* <NavLink to="/faqs" className="nav-item">
-//             FAQs
-//           </NavLink> */}
-//           {/* {isAuthenticated && (
-//             <NavLink to="/myaccount" className="nav-item">
-//               My Profile
-//             </NavLink>
-//           )} */}
-//         </NavMenu>
-//         {isAuthenticated ? (
-//           <NavBtn className="nav-btn">
-//             <NavBtnLink
-//               onClick={() =>
-//                 logout({ logoutParams: { returnTo: window.location.origin } })
-//               }
-//             >
-//               Log Out
-//             </NavBtnLink>
-//           </NavBtn>
-//         ) : (
-//           <NavBtn className="nav-btn">
-//             <NavBtnLink onClick={() => loginWithRedirect()}>
-//               Log In/Register
-//             </NavBtnLink>
-//           </NavBtn>
-//         )}
-//       </Nav>
-//     </>
-//   );
-// };
-
-// export default Navbar;
-import React, { useState } from "react";
-import {
-  Nav,
-  NavLink,
-  Bars,
-  NavMenu,
-  NavBtn,
-  NavBtnLink,
-} from "./Navbar_element";
-import "./Navbar.css";
-import { useAuth0 } from "@auth0/auth0-react";
-import logo from "../../assets/flowtracklogo.png";
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { User } from 'lucide-react';
+import { Button } from '../../Ui/button';
+import { ThemeToggle } from './ThemeToggle';
+import { cn } from '../../lib/utils';
 
 const Navbar = () => {
-  const [showNav, setShowNav] = useState(false);
-  const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
 
-  const toggleNav = () => {
-    setShowNav(!showNav);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Insights', path: '/insights' },
+  ];
 
   return (
-    <>
-      <Nav className="navbar">
-        <NavLink to="/" className="nav-logo">
-        <img src={logo} alt="logo" className="h-5 w-auto mr-2" />
-        </NavLink>
-        <Bars onClick={toggleNav} />
-        <NavMenu $showNav={showNav}>
-          <NavLink to="/work" className="nav-item">
-            About Us
-          </NavLink>
-          <NavLink to="/policy" className="nav-item">
-            DashBoard
-          </NavLink>
-          {/* <NavLink to="/collab" className="nav-item">
-            Need a Dev?
-          </NavLink> */}
-        </NavMenu>
-        {isAuthenticated ? (
-          <NavBtn className="nav-btn">
-            <NavBtnLink
-              onClick={() =>
-                logout({ logoutParams: { returnTo: window.location.origin } })
-              }
+    <header 
+      className={cn(
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4 px-6 md:px-10',
+        scrolled 
+          ? 'bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/30 dark:bg-black/50 dark:border-gray-800/30' 
+          : 'bg-transparent'
+      )}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <Link 
+          to="/" 
+          className="font-medium text-xl tracking-tight"
+        >
+          <span className="text-2xl text-white font-bold">FlowTrack</span>
+          <span className="text-blue-500 font-bold">.</span>
+        </Link>
+
+        <nav className="hidden md:flex items-center space-x-1">
+          {navLinks.map((link) => (
+            <Link
+            target='_blank'
+              key={link.path}
+              to={link.path}
+              className={cn(
+                'px-4 py-2 rounded-full text-sm font-medium transition-all',
+                location.pathname === link.path
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+              )}
             >
-              Log Out
-            </NavBtnLink>
-          </NavBtn>
-        ) : (
-          <NavBtn className="nav-btn">
-            <NavBtnLink onClick={() => loginWithRedirect()}>
-              Log In/Register
-            </NavBtnLink>
-          </NavBtn>
-        )}
-      </Nav>
-    </>
+              {link.name}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center space-x-4">
+          <ThemeToggle />
+
+          {/* Dummy Profile Icon */}
+          {/* <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+            <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            <span className="text-sm font-medium truncate max-w-[100px]">
+              Guest
+            </span>
+          </div> */}
+
+          {/* Dummy Login Button */}
+          <Button 
+            className="flex items-center justify-center h-10 px-6 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-medium transition-all hover:bg-gray-800 dark:hover:bg-gray-200"
+          >
+            Get Started
+          </Button>
+        </div>
+      </div>
+    </header>
   );
 };
 

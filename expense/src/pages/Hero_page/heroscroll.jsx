@@ -11,7 +11,7 @@ export function HeroScrollDemo() {
             <h1 className="text-4xl font-semibold text-black dark:text-white">
             Take Control of Your 
             <br />
-              <span className="text-black dark:text-white text-4xl md:text-[6rem] font-bold mt-1 leading-none">
+              <span className="text-black dark:text-blue-500 text-4xl md:text-[6rem] font-bold mt-1 leading-none">
               Finances with Ease
               </span>
             </h1>

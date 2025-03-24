@@ -12,9 +12,11 @@ import Sidebar from "./pages/Dashbord/Sidebar/Sidebar";
 import Demo  from "./pages/Features/Demo";
 import { gsap } from "gsap";
 import { useEffect } from "react";
-import DashboardNav from "./pages/Dashboard_pages/home";
+import Dashboard from "./pages/Dashbord/Dashboard";
 import { UserProvider } from './pages/Dashboard_pages/context/UserContext';
-
+import Footer from "./pages/Footer/Footer";
+import { Routes, Route } from "react-router-dom";
+import ComingFeature from "./pages/Coming_features/ComingFeature";
 
 function App() {
   
@@ -37,24 +39,26 @@ function App() {
     <div className="app-container">
       
       {/* Background grid */}
-      {/* <BackgroundWrapper /> */}
+      <BackgroundWrapper />
 
       {/* Ensure content is layered above */}
       <div className="content-wrapper">
-        <UserProvider>
-        <Router>
-          {/* <SplashCursor1 /> */}
-          <Navbar />
-          {/* <HeroScrollDemo /> */}
-          {/* <BentoGrid/> */}
-          {/* <Demo/> */}
-          {/* <JoinNow /> */}
-          <Sidebar />
-
-        
-          
-        </Router>
-        </UserProvider>
+      <UserProvider>
+  <Router>
+    {/* Other components */}
+    <Navbar />
+    <HeroScrollDemo />
+    <BentoGrid />
+    <JoinNow />
+    <ComingFeature />
+    {/* <Footer /> */}
+  
+    
+    <Routes>
+      <Route path="/dashboard" replace={true} element={<Dashboard />}  />
+    </Routes>
+  </Router>
+</UserProvider>
       </div>
     </div>
   );
