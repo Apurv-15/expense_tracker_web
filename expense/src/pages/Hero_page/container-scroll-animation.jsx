@@ -2,6 +2,7 @@
 import React, { useRef } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
 
+
 export const ContainerScroll = ({
   titleComponent,
   children
@@ -9,7 +10,9 @@ export const ContainerScroll = ({
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
+    offset: ["start start", "end end"]
   });
+
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -45,7 +48,10 @@ export const ContainerScroll = ({
           {children}
         </Card>
       </div>
+
     </div>)
+    
+         
   );
 };
 
@@ -83,5 +89,6 @@ export const Card = ({
         {children}
       </div>
     </motion.div>)
+
   );
 };

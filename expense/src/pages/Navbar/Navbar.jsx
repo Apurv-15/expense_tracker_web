@@ -45,7 +45,6 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center space-x-1">
           {navLinks.map((link) => (
             <Link
-            target='_blank'
               key={link.path}
               to={link.path}
               className={cn(
