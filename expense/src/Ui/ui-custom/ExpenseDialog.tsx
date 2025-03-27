@@ -79,7 +79,7 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
 
           {/* Amount Field */}
           <div className="grid gap-2">
-            <Label htmlFor="amount">Amount ($)</Label>
+            <Label htmlFor="amount">Amount (₹)</Label>
             <Input
               id="amount"
               placeholder="0.00"

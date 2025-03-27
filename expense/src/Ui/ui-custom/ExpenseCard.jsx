@@ -42,7 +42,7 @@ export function ExpenseCard({
       </CardHeader>
       <CardContent className="px-5 pb-4">
         <div className="text-2xl font-semibold">
-          <AnimatedNumber value={amount} prefix="$" duration={1500} decimals={2} />
+          <AnimatedNumber value={amount} prefix="₹" duration={1500} decimals={2} />
         </div>
 
         {previousAmount !== undefined && (

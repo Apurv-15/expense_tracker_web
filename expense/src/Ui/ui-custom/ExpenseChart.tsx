@@ -69,10 +69,10 @@ export function ExpenseChart({ data, className, initialTimeRange = 'monthly' }: 
               tickLine={false}
               axisLine={{ stroke: 'hsl(var(--border))' }}
               className="text-muted-foreground text-xs"
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `₹${value}`}
             />
             <Tooltip 
-              formatter={(value) => [`$${value}`, 'Amount']}
+              formatter={(value) => [`₹${value}`, 'Amount']}
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))',
                 borderColor: 'hsl(var(--border))',
@@ -109,10 +109,10 @@ export function ExpenseChart({ data, className, initialTimeRange = 'monthly' }: 
               tickLine={false} 
               axisLine={{ stroke: 'hsl(var(--border))' }}
               className="text-muted-foreground text-xs"
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `₹${value}`}
             />
             <Tooltip 
-              formatter={(value) => [`$${value}`, 'Amount']}
+              formatter={(value) => [`₹${value}`, 'Amount']}
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))',
                 borderColor: 'hsl(var(--border))',

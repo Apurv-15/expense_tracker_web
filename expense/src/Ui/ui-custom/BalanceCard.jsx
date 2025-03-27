@@ -20,7 +20,7 @@ export function BalanceCard({ balance, className = "" }) {
 
         <div className="flex flex-col">
           <div className="text-3xl font-bold mb-1 text-primary">
-            <AnimatedNumber value={balance} prefix="$" duration={2000} decimals={2} />
+            <AnimatedNumber value={balance} prefix="₹" duration={2000} decimals={2} />
           </div>
           <p className="text-sm text-muted-foreground">Updated just now</p>
         </div>

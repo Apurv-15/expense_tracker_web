@@ -30,12 +30,12 @@ export function BudgetProgress({ spent, budget, className = "" }) {
             <div>
               <p className="text-sm text-muted-foreground">Spent</p>
               <p className="text-2xl font-semibold">
-                <AnimatedNumber value={spent} prefix="$" duration={1500} decimals={2} />
+                <AnimatedNumber value={spent} prefix="₹" duration={1500} decimals={2} />
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Budget</p>
-              <p className="text-lg font-medium">${budget.toFixed(2)}</p>
+              <p className="text-lg font-medium">₹{budget.toFixed(2)}</p>
             </div>
           </div>
 
@@ -51,7 +51,7 @@ export function BudgetProgress({ spent, budget, className = "" }) {
             <div>
               <p className="text-sm text-muted-foreground">Remaining</p>
               <p className={cn("font-medium", isOverBudget ? "text-destructive" : "text-emerald-500")}>
-                {isOverBudget ? "-" : ""}$
+                {isOverBudget ? "-" : ""}₹
                 <AnimatedNumber value={Math.abs(remaining)} duration={1500} decimals={2} />
               </p>
             </div>
