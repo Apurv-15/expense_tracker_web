@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, DollarSign, Tag, AlignLeft } from 'lucide-react';
+import { Calendar, IndianRupee, Tag, AlignLeft } from 'lucide-react';
 
 const ExpenseForm = ({ onSubmit }) => {
   const [amount, setAmount] = useState('');
@@ -39,7 +39,7 @@ const ExpenseForm = ({ onSubmit }) => {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 dark:text-gray-400">
-              <DollarSign className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4" />
             </div>
             <input
               type="number"

@@ -62,15 +62,6 @@ const Navbar = () => {
         <div className="flex items-center space-x-4">
           <ThemeToggle />
 
-          {/* Dummy Profile Icon */}
-          {/* <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
-            <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-            <span className="text-sm font-medium truncate max-w-[100px]">
-              Guest
-            </span>
-          </div> */}
-
-          {/* Dummy Login Button */}
           <Button 
             className="flex items-center justify-center h-10 px-6 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-medium transition-all hover:bg-gray-800 dark:hover:bg-gray-200"
           >

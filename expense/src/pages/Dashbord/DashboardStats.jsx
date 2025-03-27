@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, Calendar, TrendingUp } from 'lucide-react';
+import { IndianRupee } from 'lucide-react';
 import StatCard from './StateCard';
 
 const DashboardStats = ({ 
@@ -9,9 +9,9 @@ const DashboardStats = ({
   getExpenseTrend 
 }) => {
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(amount);
   };
 
@@ -23,7 +23,7 @@ const DashboardStats = ({
         title="Total Balance"
         value={formatCurrency(getTotalExpenses())}
         subtext="Updated just now"
-        icon={DollarSign}
+        icon={IndianRupee}
         iconColor="text-blue-600 dark:text-blue-400"
         iconBgColor="bg-blue-100 dark:bg-blue-900/30"
       />
@@ -31,7 +31,7 @@ const DashboardStats = ({
       <StatCard
         title="Monthly Expenses"
         value={formatCurrency(getThisMonthExpenses())}
-        icon={Calendar}
+        icon={IndianRupee}  // ✅ Changed from Calendar to IndianRupee
         iconColor="text-purple-600 dark:text-purple-400"
         iconBgColor="bg-purple-100 dark:bg-purple-900/30"
         trend={trend}
@@ -41,7 +41,7 @@ const DashboardStats = ({
         title="Expense Count"
         value={expenses.length}
         subtext="Total transactions"
-        icon={TrendingUp}
+        icon={IndianRupee}  // ✅ Changed from TrendingUp to IndianRupee
         iconColor="text-green-600 dark:text-green-400"
         iconBgColor="bg-green-100 dark:bg-green-900/30"
       />

@@ -1,0 +1,154 @@
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../Ui/ui/dialog';
+import { Button } from '../../Ui/ui/button';
+import { Input } from '../../Ui/ui/input';
+import { Label } from '../../Ui/ui/label';
+import { Calendar } from '../../Ui/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../Ui/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '../../Ui/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '../../lib/utils'; // Ensure correct import path
+import React from "react";
+
+
+export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [errors, setErrors] = useState({
+    description: '',
+    amount: '',
+    category: '',
+    date: '',
+  });
+
+  const validateForm = () => {
+    const newErrors = {
+      description: description.trim() === '' ? 'Description is required' : '',
+      amount: !amount || isNaN(Number(amount)) ? 'Valid amount is required' : '',
+      category: category === '' ? 'Category is required' : '',
+      date: !date ? 'Date is required' : '',
+    };
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error);
+  };
+
+  const handleSubmit = () => {
+    if (validateForm()) {
+      onSubmit({
+        description,
+        amount: parseFloat(amount),
+        category,
+        date: format(date, 'yyyy-MM-dd'),
+      });
+
+      // Reset form fields after submission
+      setDescription('');
+      setAmount('');
+      setCategory('');
+      setDate(new Date());
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="glass-card backdrop-blur-md border-border/50 sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-lg">Add New Expense</DialogTitle>
+          <DialogDescription>
+            Enter the details of your expense. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 py-4">
+          {/* Description Field */}
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              placeholder="What did you spend on?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={errors.description ? 'border-destructive' : ''}
+            />
+            {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
+          </div>
+
+          {/* Amount Field */}
+          <div className="grid gap-2">
+            <Label htmlFor="amount">Amount ($)</Label>
+            <Input
+              id="amount"
+              placeholder="0.00"
+              type="number"
+              step="0.01"
+              min="0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className={errors.amount ? 'border-destructive' : ''}
+            />
+            {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
+          </div>
+
+          {/* Category Selection */}
+          <div className="grid gap-2">
+            <Label htmlFor="category">Category</Label>
+            <Select onValueChange={setCategory}>
+              <SelectTrigger className={errors.category ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.category && <p className="text-xs text-destructive">{errors.category}</p>}
+          </div>
+
+          {/* Date Selection */}
+          <div className="grid gap-2">
+            <Label htmlFor="date">Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'w-full justify-start text-left font-normal',
+                    !date && 'text-muted-foreground',
+                    errors.date ? 'border-destructive' : ''
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(selectedDate) => setDate(selectedDate || new Date())}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit}>Save Expense</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
