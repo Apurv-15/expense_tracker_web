@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { cn } from '../../lib/utils';
 import React from "react";
-
 
 interface ExpenseChartProps {
   data: {
@@ -20,19 +18,16 @@ export function ExpenseChart({ data, className, initialTimeRange = 'monthly' }: 
   const [chartData, setChartData] = useState(data[initialTimeRange] || data.monthly);
   const [isVisible, setIsVisible] = useState(false);
 
-  // Update chart data when timeRange or data changes
   useEffect(() => {
     setChartData(data[timeRange as keyof typeof data]);
   }, [data, timeRange]);
 
-  // Update timeRange when initialTimeRange changes
   useEffect(() => {
     if (initialTimeRange) {
       setTimeRange(initialTimeRange);
     }
   }, [initialTimeRange]);
 
-  // Animation on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -52,8 +47,8 @@ export function ExpenseChart({ data, className, initialTimeRange = 'monthly' }: 
           <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                <stop offset="0%" stopColor="#1E90FF" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#1E90FF" stopOpacity={0.3} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />

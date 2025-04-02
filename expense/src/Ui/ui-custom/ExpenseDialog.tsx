@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { cn } from '../../lib/utils'; // Ensure correct import path
 import React from "react";
 
-
 export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -55,10 +54,10 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-card backdrop-blur-md border-border/50 sm:max-w-[425px]">
+      <DialogContent className="glass-card backdrop-blur-md border-border/50 sm:max-w-[425px] bg-gray-900 text-white">
         <DialogHeader>
-          <DialogTitle className="text-lg">Add New Expense</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg text-white">Add New Expense</DialogTitle>
+          <DialogDescription className="text-gray-400">
             Enter the details of your expense. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
@@ -66,20 +65,20 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
         <div className="grid gap-4 py-4">
           {/* Description Field */}
           <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-gray-300">Description</Label>
             <Input
               id="description"
               placeholder="What did you spend on?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className={errors.description ? 'border-destructive' : ''}
+              className={`bg-gray-800 text-white ${errors.description ? 'border-red-500' : ''}`}
             />
-            {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
+            {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
           </div>
 
           {/* Amount Field */}
           <div className="grid gap-2">
-            <Label htmlFor="amount">Amount (₹)</Label>
+            <Label htmlFor="amount" className="text-gray-300">Amount (₹)</Label>
             <Input
               id="amount"
               placeholder="0.00"
@@ -88,65 +87,65 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
               min="0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className={errors.amount ? 'border-destructive' : ''}
+              className={`bg-gray-800 text-white ${errors.amount ? 'border-red-500' : ''}`}
             />
-            {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
+            {errors.amount && <p className="text-xs text-red-500">{errors.amount}</p>}
           </div>
 
           {/* Category Selection */}
           <div className="grid gap-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category" className="text-gray-300">Category</Label>
             <Select onValueChange={setCategory}>
-              <SelectTrigger className={errors.category ? 'border-destructive' : ''}>
+              <SelectTrigger className={`bg-gray-800 text-white ${errors.category ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-gray-800 text-white">
                 {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
+                  <SelectItem key={cat} value={cat} className="hover:bg-gray-700">
                     {cat}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.category && <p className="text-xs text-destructive">{errors.category}</p>}
+            {errors.category && <p className="text-xs text-red-500">{errors.category}</p>}
           </div>
 
           {/* Date Selection */}
           <div className="grid gap-2">
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date" className="text-gray-300">Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !date && 'text-muted-foreground',
-                    errors.date ? 'border-destructive' : ''
+                    'w-full justify-start text-left font-normal bg-gray-800 text-white',
+                    !date && 'text-gray-400',
+                    errors.date ? 'border-red-500' : ''
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-4 w-4 text-white" />
                   {date ? format(date, 'PPP') : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 bg-gray-800 text-white border-gray-700" align="start">
                 <Calendar
                   mode="single"
                   selected={date}
                   onSelect={(selectedDate) => setDate(selectedDate || new Date())}
                   initialFocus
-                  className="p-3 pointer-events-auto"
+                  className="p-3 pointer-events-auto bg-gray-800 text-white"
                 />
               </PopoverContent>
             </Popover>
-            {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
+            {errors.date && <p className="text-xs text-red-500">{errors.date}</p>}
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="bg-gray-700 text-white hover:bg-gray-600">
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Save Expense</Button>
+          <Button onClick={handleSubmit} className="bg-blue-600 text-white hover:bg-blue-500">Save Expense</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

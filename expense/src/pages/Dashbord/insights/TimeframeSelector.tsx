@@ -15,8 +15,8 @@ const TimeframeSelector = ({ timeFrame, setTimeFrame }: TimeframeSelectorProps) 
           onClick={() => setTimeFrame(frame as any)}
           className={`px-3 py-1 text-sm rounded-full transition-all ${
             timeFrame === frame
-              ? 'bg-black dark:bg-white text-white dark:text-black'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-blue-500 text-white'
+              : 'bg-blue-500 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           {frame.charAt(0).toUpperCase() + frame.slice(1)}
