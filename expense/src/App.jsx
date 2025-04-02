@@ -14,6 +14,7 @@ import { Routes, Route } from "react-router-dom";
 
 import Body from "./pages/MainBody/Body";
 import { useTheme } from "./pages/Navbar/Themeprovider";
+import Insights from "./pages/Dashbord/insights/Insights";
 
 function App() {
   const { theme } = useTheme();
@@ -31,6 +32,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Body />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/insights" element={<Insights />} />
               </Routes>
             </Router>
             {/* </UserProvider> */}
