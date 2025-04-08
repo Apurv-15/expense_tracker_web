@@ -1,8 +1,8 @@
 
 import React, { ReactNode, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
-import { motion } from "framer-motion";
-import useMeasure from "react-use-measure";
+import { useMeasure } from "@react-hookz/web";
+
 
 export const ThreeDCard = ({
   children,
@@ -20,7 +20,7 @@ export const ThreeDCard = ({
   showGradient?: boolean;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [ref, bounds] = useMeasure();
+  const [ref] = useMeasure();
   const [isHovered, setIsHovered] = useState(false);
   const [rotationX, setRotationX] = useState(0);
   const [rotationY, setRotationY] = useState(0);
