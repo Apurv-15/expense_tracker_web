@@ -14,15 +14,20 @@ import { Routes, Route } from "react-router-dom";
 
 import Body from "./pages/MainBody/Body";
 import { useTheme } from "./pages/Navbar/Themeprovider";
+import { useAuth0 } from "@auth0/auth0-react";
 import Insights from "./pages/Dashbord/insights/Insights";
+import { Navigate } from "react-router-dom";
+
+
 
 function App() {
   const { theme } = useTheme();
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
   return (
     <ThemeProvider>
       <div className={`app-container ${theme === "dark" ? "dark" : ""}`}>
         <div className="app-container">
-          {/* <BackgroundWrapper /> */}
+          <BackgroundWrapper />
 
           <div className="content-wrapper">
             <Router>
@@ -31,11 +36,16 @@ function App() {
 
               <Routes>
                 <Route path="/" element={<Body />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/insights" element={<Insights />} />
+                <Route
+                  path="/dashboard"
+                  element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
+                />
+                <Route
+                  path="/insights"
+                  element={isAuthenticated ? <Insights /> : <Navigate to='/' />}
+                />
               </Routes>
             </Router>
-            {/* </UserProvider> */}
           </div>
         </div>
       </div>
