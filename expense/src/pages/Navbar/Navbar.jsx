@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, redirect, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { Button } from '../../Ui/button';
 import { ThemeToggle } from './ThemeToggle';
 import { cn } from '../../lib/utils';
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Navbar = () => {
+  const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
@@ -60,13 +62,22 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <ThemeToggle />
-
-          <Button 
-            className="flex items-center justify-center h-10 px-6 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-medium transition-all hover:bg-gray-800 dark:hover:bg-gray-200"
-          >
-            Get Started
-          </Button>
+          {!isAuthenticated && (
+            <Button onClick={() => loginWithRedirect({
+              redirect_uri: window.location.origin,appState:{targetUrl:"/dashboard"}
+            })}
+              className="flex items-center justify-center h-10 px-6 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-medium transition-all hover:bg-gray-800 dark:hover:bg-gray-200"
+            >
+              Get Started
+            </Button>
+          )}
+          {isAuthenticated && (
+            <Button onClick={logout}
+              className="flex items-center justify-center h-10 px-6 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-medium transition-all hover:bg-gray-800 dark:hover:bg-gray-200"
+            >
+              Logout
+            </Button>
+          )}
         </div>
       </div>
     </header>
