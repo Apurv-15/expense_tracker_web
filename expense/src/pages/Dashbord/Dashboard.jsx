@@ -8,6 +8,8 @@ import { Button } from "../../Ui/ui/button";
 import { Plus, Trash } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../Ui/ui/card";
 import { db } from "../../firebase/firebase";
+import { useAuth0 } from "@auth0/auth0-react";
+
 import {
   collection,
   addDoc,
@@ -28,6 +30,9 @@ export default function Dashboard() {
     category: '',
     date: new Date().toISOString().split('T')[0]
   });
+  const { user } = useAuth0();
+  const useremail = user?.email;
+  console.log(useremail);
 
   useEffect(() => {
     const fetchExpenses = async () => {

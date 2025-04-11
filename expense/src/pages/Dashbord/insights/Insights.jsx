@@ -6,7 +6,7 @@ import { Button } from '../../../Ui/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../Ui/ui/dialog';
 import { Input } from '../../../Ui/ui/input';
 import { Label } from '../../../Ui/ui/label';
-import { DollarSign, Settings } from 'lucide-react';
+import { IndianRupee, Settings } from 'lucide-react';
 import { useToast } from "../../../hooks/use-toast";
 
 // Sample data - this would normally come from your database
@@ -96,7 +96,7 @@ export default function Insights() {
     setIsDialogOpen(false);
     toast({
       title: "Budget Updated",
-      description: `Monthly budget has been set to $${parsedBudget.toFixed(2)}.`,
+      description: `Monthly budget has been set to ₹${parsedBudget.toFixed(2)}.`,
     });
   };
   
@@ -163,7 +163,7 @@ export default function Insights() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base font-medium text-white">Monthly Budget</CardTitle>
               <div className="bg-blue-500/10 p-2 rounded-full">
-                <DollarSign className="h-4 w-4 text-blue-400" />
+                <IndianRupee className="h-4 w-4 text-blue-400" />
               </div>
             </CardHeader>
             <CardContent>
@@ -171,7 +171,7 @@ export default function Insights() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Current Budget</p>
-                    <p className="text-2xl font-semibold text-white">${monthlyBudget.toFixed(2)}</p>
+                    <p className="text-2xl font-semibold text-white">₹{monthlyBudget.toFixed(2)}</p>
                   </div>
                   <Button 
                     variant="outline" 
@@ -186,7 +186,7 @@ export default function Insights() {
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Total Monthly Expenses</p>
                   <div className="flex items-center justify-between">
-                    <p className="font-medium text-white">${sampleData.chartData.monthly.reduce((sum, item) => sum + item.amount / 12, 0).toFixed(2)}</p>
+                    <p className="font-medium text-white">₹{sampleData.chartData.monthly.reduce((sum, item) => sum + item.amount / 12, 0).toFixed(2)}</p>
                     <p className={`text-sm ${monthlyBudget >= sampleData.chartData.monthly.reduce((sum, item) => sum + item.amount / 12, 0) ? 'text-blue-400' : 'text-red-400'}`}>
                       {monthlyBudget >= sampleData.chartData.monthly.reduce((sum, item) => sum + item.amount / 12, 0) ? 'Under Budget' : 'Over Budget'}
                     </p>
@@ -236,7 +236,7 @@ export default function Insights() {
           
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="budget" className="text-white">Monthly Budget ($)</Label>
+              <Label htmlFor="budget" className="text-white">Monthly Budget (₹)</Label>
               <Input
                 id="budget"
                 placeholder="0.00"

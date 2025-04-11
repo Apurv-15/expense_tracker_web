@@ -75,10 +75,10 @@ const VoiceInputButton = ({ onTranscriptionComplete }) => {
     
     // Find amount - look for currency symbols or numbers followed by "dollars" or similar
     let amount = '';
-    const amountRegex = /(\d+(\.\d+)?)\s*(dollars|rupees|inr|\$|₹)/i;
+    const amountRegex = /([\d,]+(?:\.\d+)?)\s*(dollars|rupees|inr|\$|₹)/i;
     const amountMatch = lowerText.match(amountRegex);
     if (amountMatch) {
-      amount = amountMatch[1];
+      amount = amountMatch[1].replace(/,/g, ''); // Remove commas if present
     }
     
     // Try to identify category from common expense categories
@@ -86,32 +86,36 @@ const VoiceInputButton = ({ onTranscriptionComplete }) => {
     let category = 'Other'; // Default
     for (const cat of categories) {
       if (lowerText.includes(cat)) {
-        category = cat.charAt(0).toUpperCase() + cat.slice(1); // Capitalize
+        category = cat.charAt(0).toUpperCase() + cat.slice(1);
         break;
       }
     }
     
-    // Extract description - use the whole text if we can't find anything more specific
+    // Extract description
     let description = text;
     if (lowerText.includes('for') && lowerText.indexOf('for') + 4 < lowerText.length) {
       description = text.substring(lowerText.indexOf('for') + 4).trim();
-      // Remove category and amount mentions from description if they exist
       if (category !== 'Other') {
         description = description.replace(new RegExp(category, 'i'), '').trim();
       }
       if (amount) {
-        description = description.replace(new RegExp(amount, 'i'), '').trim();
+        description = description.replace(new RegExp(`\s*${amount}\s*`, 'i'), '').trim();
       }
     }
     
-    // Default the date to today
-    const today = new Date();
+    // Handle date if mentioned (e.g., "today", "yesterday", "last week")
+    let date = new Date();
+    if (lowerText.includes('yesterday')) {
+      date.setDate(date.getDate() - 1);
+    } else if (lowerText.includes('last week')) {
+      date.setDate(date.getDate() - 7);
+    }
     
     return {
-      description: description || "Voice expense",
-      amount: amount || "",
+      description: description.trim(),
+      amount: amount || '',
       category: category,
-      date: today
+      date: date.toISOString().split('T')[0]
     };
   };
 
