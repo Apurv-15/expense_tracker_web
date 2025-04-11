@@ -16,6 +16,8 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  setDoc,
+  getDoc
 } from "firebase/firestore";
 import VoiceInputButton from "../../Ui/ui-custom/VoiceInputButton";
 
@@ -32,33 +34,35 @@ export default function Dashboard() {
   });
   const { user } = useAuth0();
   const useremail = user?.email;
-  console.log(useremail);
 
   useEffect(() => {
+    if (!useremail) return;
     const fetchExpenses = async () => {
-      const querySnapshot = await getDocs(collection(db, "expenses"));
-      const expensesList = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setExpenses(expensesList);
+      const docRef = doc(db, "expenses", useremail);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setExpenses(data.items || []);
+      }
     };
     fetchExpenses();
-  }, []);
+  }, [useremail]);
 
   const addNewExpense = async (expense) => {
     const newExpense = {
       description: expense.description,
-      amount: expense.amount,
+      amount: parseFloat(expense.amount),
       category: expense.category,
-      date: expense.date, // Use the date from form
+      date: expense.date,
     };
 
-    const docRef = await addDoc(collection(db, "expenses"), newExpense);
-    setExpenses([{ id: docRef.id, ...newExpense }, ...expenses]);
+    const updatedExpenses = [newExpense, ...expenses];
+    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses });
+
+    setExpenses(updatedExpenses);
     setIsExpenseDialogOpen(false);
-    setBalance((prevBalance) => prevBalance - expense.amount);
-    setExpenseFormData({ // Reset form data
+    setBalance((prevBalance) => prevBalance - newExpense.amount);
+    setExpenseFormData({
       description: '',
       amount: '',
       category: '',
@@ -66,25 +70,22 @@ export default function Dashboard() {
     });
   };
 
-  const deleteExpense = async (id, amount) => {
-    await deleteDoc(doc(db, "expenses", id));
-    setExpenses(expenses.filter((expense) => expense.id !== id));
+  const deleteExpense = async (index, amount) => {
+    const updatedExpenses = expenses.filter((_, i) => i !== index);
+    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses });
+
+    setExpenses(updatedExpenses);
     setBalance((prevBalance) => prevBalance + amount);
   };
 
   const handleVoiceTranscription = (expenseData) => {
-    // Ensure all fields are strings
     const formattedData = {
       description: expenseData.description || '',
       amount: expenseData.amount || '',
       category: expenseData.category || '',
       date: expenseData.date || new Date().toISOString().split('T')[0]
     };
-    
-    // Set the form data with the voice input data
     setExpenseFormData(formattedData);
-    
-    // Open the expense dialog with the pre-filled data
     setIsExpenseDialogOpen(true);
   };
 
@@ -143,32 +144,26 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {expenses.length === 0 ? (
-                <p className="text-center text-blue-400">
-                  No transactions yet.
-                </p>
+                <p className="text-center text-blue-400">No transactions yet.</p>
               ) : (
                 <div className="space-y-4">
-                  {expenses.map((transaction) => (
+                  {expenses.map((transaction, index) => (
                     <div
-                      key={transaction.id}
+                      key={index}
                       className="flex justify-between items-center p-3 bg-[#180936] rounded-lg border border-[#383838]"
                     >
                       <div>
-                        <p className="font-medium text-white">
-                          {transaction.description}
-                        </p>
+                        <p className="font-medium text-white">{transaction.description}</p>
                         <p className="text-xs text-blue-400">
                           {transaction.date} • {transaction.category}
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-rose-500 font-medium">
-                          -${transaction.amount.toFixed(2)}
+                          -₹{transaction.amount.toFixed(2)}
                         </span>
                         <button
-                          onClick={() =>
-                            deleteExpense(transaction.id, transaction.amount)
-                          }
+                          onClick={() => deleteExpense(index, transaction.amount)}
                           className="text-red-500 hover:text-red-700"
                         >
                           <Trash size={16} />
@@ -194,13 +189,7 @@ export default function Dashboard() {
         open={isExpenseDialogOpen}
         onOpenChange={setIsExpenseDialogOpen}
         onSubmit={addNewExpense}
-        categories={[
-          "Groceries",
-          "Utilities",
-          "Dining",
-          "Entertainment",
-          "Other",
-        ]}
+        categories={["Groceries", "Utilities", "Dining", "Entertainment", "Other"]}
         initialData={expenseFormData}
         className="bg-[#0E1526] border border-[#2A2A2A] shadow-lg"
       />
