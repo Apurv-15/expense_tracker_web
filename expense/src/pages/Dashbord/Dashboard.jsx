@@ -9,21 +9,21 @@ import { Plus, Trash } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../Ui/ui/card";
 import { db } from "../../firebase/firebase";
 import { useAuth0 } from "@auth0/auth0-react";
-
 import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
   doc,
-  setDoc,
-  getDoc
+  getDoc,
+  setDoc
 } from "firebase/firestore";
 import VoiceInputButton from "../../Ui/ui-custom/VoiceInputButton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../Ui/ui/dialog";
+import { Input } from "../../Ui/ui/input";
+import { Label } from "../../Ui/ui/label";
 
 export default function Dashboard() {
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
+  const [isBalanceDialogOpen, setIsBalanceDialogOpen] = useState(false);
   const [balance, setBalance] = useState(5840.27);
+  const [newBalance, setNewBalance] = useState("5840.27");
   const [budget, setBudget] = useState(2500.0);
   const [expenses, setExpenses] = useState([]);
   const [expenseFormData, setExpenseFormData] = useState({
@@ -43,6 +43,10 @@ export default function Dashboard() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setExpenses(data.items || []);
+        if (data.balance) {
+          setBalance(data.balance);
+          setNewBalance(data.balance.toString());
+        }
       }
     };
     fetchExpenses();
@@ -57,11 +61,12 @@ export default function Dashboard() {
     };
 
     const updatedExpenses = [newExpense, ...expenses];
-    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses });
+    const updatedBalance = balance - newExpense.amount;
+    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses, balance: updatedBalance });
 
     setExpenses(updatedExpenses);
+    setBalance(updatedBalance);
     setIsExpenseDialogOpen(false);
-    setBalance((prevBalance) => prevBalance - newExpense.amount);
     setExpenseFormData({
       description: '',
       amount: '',
@@ -72,10 +77,11 @@ export default function Dashboard() {
 
   const deleteExpense = async (index, amount) => {
     const updatedExpenses = expenses.filter((_, i) => i !== index);
-    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses });
+    const updatedBalance = balance + amount;
+    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses, balance: updatedBalance });
 
     setExpenses(updatedExpenses);
-    setBalance((prevBalance) => prevBalance + amount);
+    setBalance(updatedBalance);
   };
 
   const handleVoiceTranscription = (expenseData) => {
@@ -87,6 +93,18 @@ export default function Dashboard() {
     };
     setExpenseFormData(formattedData);
     setIsExpenseDialogOpen(true);
+  };
+
+  const handleBalanceUpdate = async () => {
+    const parsedBalance = parseFloat(newBalance);
+    if (isNaN(parsedBalance)) return;
+    await setDoc(doc(db, "expenses", useremail), {
+      items: expenses,
+      balance: parsedBalance,
+      budget: budget // ensure budget is preserved in DB
+    });
+    setBalance(parsedBalance);
+    setIsBalanceDialogOpen(false);
   };
 
   return (
@@ -101,8 +119,39 @@ export default function Dashboard() {
           >
             <Plus size={16} className="text-white" /> Add Expense
           </Button>
+          <Button
+            onClick={() => setIsBalanceDialogOpen(true)}
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg"
+          >
+            Set Balance
+          </Button>
         </div>
       </div>
+
+      <Dialog open={isBalanceDialogOpen} onOpenChange={setIsBalanceDialogOpen}>
+        <DialogContent className="bg-gray-800 border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Set Current Balance</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Enter your current balance to initialize or update your financial tracking.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Label htmlFor="balance" className="text-white">Current Balance (₹)</Label>
+            <Input
+              id="balance"
+              type="number"
+              value={newBalance}
+              onChange={(e) => setNewBalance(e.target.value)}
+              className="bg-gray-700 text-white"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBalanceDialogOpen(false)} className="text-white">Cancel</Button>
+            <Button onClick={handleBalanceUpdate} className="bg-blue-600 hover:bg-blue-700 text-white">Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <BalanceCard

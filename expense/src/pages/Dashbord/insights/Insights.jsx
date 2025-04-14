@@ -102,7 +102,7 @@ export default function Insights() {
   
   return (
     <DashboardLayout>
-      <div className="margin-top-8 flex justify-between items-center mb-6">
+      <div className="mt-15 flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">Expense Analytics</h1>
         <Button 
           variant="outline" 
