@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../../Ui/ui-custom/DashboardLayout';
-import { ExpenseChart } from '../../../Ui/ui-custom/ExpenseChart';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../Ui/ui/card';
 import { Button } from '../../../Ui/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../Ui/ui/dialog';
@@ -8,98 +7,229 @@ import { Input } from '../../../Ui/ui/input';
 import { Label } from '../../../Ui/ui/label';
 import { IndianRupee, Settings } from 'lucide-react';
 import { useToast } from "../../../hooks/use-toast";
-
-// Sample data - this would normally come from your database
-const sampleData = {
-  chartData: {
-    daily: [
-      { name: 'Mon', amount: 45 },
-      { name: 'Tue', amount: 35 },
-      { name: 'Wed', amount: 55 },
-      { name: 'Thu', amount: 40 },
-      { name: 'Fri', amount: 60 },
-      { name: 'Sat', amount: 35 },
-      { name: 'Sun', amount: 30 },
-    ],
-    weekly: [
-      { name: 'Week 1', amount: 320 },
-      { name: 'Week 2', amount: 280 },
-      { name: 'Week 3', amount: 340 },
-      { name: 'Week 4', amount: 290 },
-    ],
-    monthly: [
-      { name: 'Jan', amount: 1200 },
-      { name: 'Feb', amount: 940 },
-      { name: 'Mar', amount: 1100 },
-      { name: 'Apr', amount: 1300 },
-      { name: 'May', amount: 900 },
-      { name: 'Jun', amount: 1200 },
-      { name: 'Jul', amount: 1000 },
-      { name: 'Aug', amount: 1100 },
-      { name: 'Sep', amount: 1400 },
-      { name: 'Oct', amount: 1260 },
-      { name: 'Nov', amount: 1150 },
-      { name: 'Dec', amount: 1260 },
-    ],
-  },
-  categories: [
-    { name: 'Groceries', amount: 420.50, percentage: 35, color: 'bg-blue-500' },
-    { name: 'Utilities', amount: 250.00, percentage: 20, color: 'bg-blue-400' },
-    { name: 'Dining', amount: 350.75, percentage: 28, color: 'bg-blue-600' },
-    { name: 'Entertainment', amount: 180.50, percentage: 15, color: 'bg-blue-300' },
-    { name: 'Other', amount: 58.00, percentage: 2, color: 'bg-blue-700' },
-  ],
-};
+import { db } from '../../../firebase/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useAuth0 } from "@auth0/auth0-react";
+import ExpenseBarChart from './ExpenseBarChart';
 
 export default function Insights() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('monthly');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [monthlyBudget, setMonthlyBudget] = useState(2500);
   const [newBudget, setNewBudget] = useState('2500');
-  const { toast } = useToast();
-  
-  // Get the display data based on the selected timeframe
-  const getTimeframeData = () => {
-    switch (selectedTimeframe) {
-      case 'daily':
-        return {
-          chartData: sampleData.chartData.daily,
-          label: 'Daily'
-        };
-      case 'yearly':
-        return {
-          chartData: sampleData.chartData.monthly, // Use monthly data for yearly view
-          label: 'Yearly'
-        };
-      default:
-        return {
-          chartData: sampleData.chartData.monthly,
-          label: 'Monthly'
-        };
-    }
-  };
-  
-  const timeframeData = getTimeframeData();
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [processedData, setProcessedData] = useState({
+    chartData: {
+      daily: [],
+      monthly: [],
+      yearly: []
+    },
+    categories: []
+  });
 
-  const handleBudgetUpdate = () => {
-    const parsedBudget = parseFloat(newBudget);
-    if (isNaN(parsedBudget) || parsedBudget <= 0) {
+  const { toast } = useToast();
+  const { user } = useAuth0();
+  const useremail = user?.email;
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        if (!useremail) {
+          throw new Error('User not authenticated');
+        }
+
+        const docRef = doc(db, "expenses", useremail);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          
+          // If data is stored as an array of items
+          if (data.items && Array.isArray(data.items)) {
+            setExpenses(data.items);
+          } else {
+            // If data is stored in a different structure
+            const items = data.items || [];
+            setExpenses(items);
+          }
+          
+          // Set budget if available
+          if (data.budget) {
+            setMonthlyBudget(data.budget);
+          }
+          setLoading(false);
+        } else {
+          // Initialize with empty array if no data exists
+          setExpenses([]);
+          setLoading(false);
+        }
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+        toast({
+          title: "Error fetching expenses",
+          description: err.message,
+          variant: "destructive"
+        });
+      }
+    };
+
+    fetchExpenses();
+  }, [useremail]);
+
+  useEffect(() => {
+    const processData = () => {
+      if (!expenses || expenses.length === 0) {
+        return {
+          chartData: {
+            daily: [],
+            monthly: [],
+            yearly: []
+          },
+          categories: []
+        };
+      }
+
+      // Group expenses by category
+      const categoryTotals = expenses.reduce((acc, expense) => {
+        const category = expense.category || 'Uncategorized';
+        acc[category] = (acc[category] || 0) + (expense.amount || 0);
+        return acc;
+      }, {});
+
+      // Calculate percentages
+      const total = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      const categories = Object.entries(categoryTotals).map(([category, amount]) => ({
+        name: category,
+        amount,
+        percentage: total > 0 ? ((amount / total) * 100).toFixed(1) : 0
+      })).sort((a, b) => b.amount - a.amount);
+
+      // Prepare time-based data
+      const chartData = {
+        daily: [],
+        monthly: [],
+        yearly: []
+      };
+
+      // Group expenses by timeframe
+      expenses.forEach(expense => {
+        if (!expense.date) return;
+        
+        const date = new Date(expense.date);
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const day = date.getDate();
+
+        // Daily data
+        const dailyKey = `${year}-${month + 1}-${day}`;
+        const dailyIndex = chartData.daily.findIndex(d => d.name === dailyKey);
+        if (dailyIndex !== -1) {
+          chartData.daily[dailyIndex].amount += expense.amount;
+        } else {
+          chartData.daily.push({
+            name: dailyKey,
+            amount: expense.amount
+          });
+        }
+
+        // Monthly data
+        const monthlyKey = `${year}-${month + 1}`;
+        const monthlyIndex = chartData.monthly.findIndex(d => d.name === monthlyKey);
+        if (monthlyIndex !== -1) {
+          chartData.monthly[monthlyIndex].amount += expense.amount;
+        } else {
+          chartData.monthly.push({
+            name: monthlyKey,
+            amount: expense.amount
+          });
+        }
+
+        // Yearly data
+        const yearlyIndex = chartData.yearly.findIndex(d => d.name === year.toString());
+        if (yearlyIndex !== -1) {
+          chartData.yearly[yearlyIndex].amount += expense.amount;
+        } else {
+          chartData.yearly.push({
+            name: year.toString(),
+            amount: expense.amount
+          });
+        }
+      });
+
+      // Sort data by date
+      chartData.daily.sort((a, b) => new Date(a.name) - new Date(b.name));
+      chartData.monthly.sort((a, b) => new Date(a.name) - new Date(b.name));
+      chartData.yearly.sort((a, b) => new Date(a.name) - new Date(b.name));
+
+      return {
+        chartData,
+        categories
+      };
+    };
+
+    const processed = processData();
+    setProcessedData(processed);
+    console.log('Processed Expenses:', processed);
+  }, [expenses]);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2
+    }).format(value);
+  };
+
+  const handleBudgetUpdate = async () => {
+    try {
+      const parsedBudget = parseFloat(newBudget);
+      if (isNaN(parsedBudget) || parsedBudget <= 0) {
+        throw new Error('Please enter a valid budget amount');
+      }
+
+      const docRef = doc(db, "expenses", useremail);
+      await setDoc(docRef, {
+        items: expenses,
+        budget: parsedBudget
+      });
+
+      setMonthlyBudget(parsedBudget);
+      setIsDialogOpen(false);
       toast({
-        title: "Invalid Budget",
-        description: "Please enter a valid budget amount greater than zero.",
+        title: "Budget Updated",
+        description: `Monthly budget set to ₹${parsedBudget.toFixed(2)}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error Updating Budget",
+        description: error.message,
         variant: "destructive"
       });
-      return;
     }
-
-    setMonthlyBudget(parsedBudget);
-    setIsDialogOpen(false);
-    toast({
-      title: "Budget Updated",
-      description: `Monthly budget has been set to ₹${parsedBudget.toFixed(2)}.`,
-    });
   };
-  
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-8">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="mt-15 flex justify-between items-center mb-6">
@@ -146,15 +276,14 @@ export default function Insights() {
             </div>
           </CardHeader>
           <CardContent>
-            <ExpenseChart 
-              data={{
-                daily: sampleData.chartData.daily,
-                weekly: sampleData.chartData.weekly,
-                monthly: sampleData.chartData.monthly
-              }} 
-              initialTimeRange={selectedTimeframe === 'yearly' ? 'monthly' : selectedTimeframe}
-              className="text-white"
-            />
+            <div className="relative h-96">
+              <div className="absolute inset-0 bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg shadow-lg">
+                <ExpenseBarChart 
+                  data={processedData.chartData[selectedTimeframe] || []}
+                  formatCurrency={formatCurrency}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
         
@@ -186,9 +315,9 @@ export default function Insights() {
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Total Monthly Expenses</p>
                   <div className="flex items-center justify-between">
-                    <p className="font-medium text-white">₹{sampleData.chartData.monthly.reduce((sum, item) => sum + item.amount / 12, 0).toFixed(2)}</p>
-                    <p className={`text-sm ${monthlyBudget >= sampleData.chartData.monthly.reduce((sum, item) => sum + item.amount / 12, 0) ? 'text-blue-400' : 'text-red-400'}`}>
-                      {monthlyBudget >= sampleData.chartData.monthly.reduce((sum, item) => sum + item.amount / 12, 0) ? 'Under Budget' : 'Over Budget'}
+                    <p className="font-medium text-white">₹{processedData.chartData.monthly.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}</p>
+                    <p className={`text-sm ${monthlyBudget >= processedData.chartData.monthly.reduce((sum, item) => sum + item.amount, 0) ? 'text-blue-400' : 'text-red-400'}`}>
+                      {monthlyBudget >= processedData.chartData.monthly.reduce((sum, item) => sum + item.amount, 0) ? 'Under Budget' : 'Over Budget'}
                     </p>
                   </div>
                 </div>
@@ -202,18 +331,18 @@ export default function Insights() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {sampleData.categories.map((category) => (
+                {processedData.categories.map((category) => (
                   <div key={category.name} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center">
-                        <div className={`h-2 w-2 rounded-full ${category.color} mr-2`}>
+                        <div className={`h-2 w-2 rounded-full bg-blue-500 mr-2`}>
                         </div>
                         <span className="text-white">{category.name}</span>
                       </div>
-                      <span className="font-medium text-white">${category.amount.toFixed(2)}</span>
+                      <span className="font-medium text-white">₹{category.amount.toFixed(2)}</span>
                     </div>
                     <div className="h-2 rounded-full bg-gray-700">
-                      <div className={`h-full rounded-full ${category.color}`} style={{ width: `${category.percentage}%` }}>
+                      <div className="h-full rounded-full bg-blue-500" style={{ width: `${category.percentage}%` }}>
                       </div>
                     </div>
                   </div>
