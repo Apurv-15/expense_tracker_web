@@ -23,6 +23,7 @@ import { Label } from "../../Ui/ui/label";
 export default function Dashboard() {
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isBalanceDialogOpen, setIsBalanceDialogOpen] = useState(false);
+  const [isBudgetDialogOpen, setIsBudgetDialogOpen] = useState(false);
   const [balance, setBalance] = useState(0.00);
   const [newBalance, setNewBalance] = useState("0.00");
   const [budget, setBudget] = useState(2500.0);
@@ -49,6 +50,9 @@ export default function Dashboard() {
         if (data.balance) {
           setBalance(data.balance);
           setNewBalance(data.balance.toString());
+        }
+        if (data.budget) {
+          setBudget(data.budget);
         }
       }
     };
@@ -109,6 +113,7 @@ export default function Dashboard() {
       await setDoc(doc(db, "expenses", user?.email), {
         items: updatedExpenses,
         balance: updatedBalance,
+        budget: budget // ensure budget is preserved in DB
       });
       console.log('Successfully updated database');
 
@@ -130,7 +135,7 @@ export default function Dashboard() {
   const deleteExpense = async (index, amount) => {
     const updatedExpenses = expenses.filter((_, i) => i !== index);
     const updatedBalance = balance + amount;
-    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses, balance: updatedBalance });
+    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses, balance: updatedBalance, budget: budget });
 
     setExpenses(updatedExpenses);
     setBalance(updatedBalance);
@@ -159,6 +164,18 @@ export default function Dashboard() {
     setIsBalanceDialogOpen(false);
   };
 
+  const handleBudgetUpdate = async (newBudget) => {
+    const parsedBudget = parseFloat(newBudget);
+    if (isNaN(parsedBudget)) return;
+    await setDoc(doc(db, "expenses", useremail), {
+      items: expenses,
+      balance: balance,
+      budget: parsedBudget
+    });
+    setBudget(parsedBudget);
+    setIsBudgetDialogOpen(false);
+  };
+
   return (
     <DashboardLayout className="min-h-screen p-6">
       <div className="flex mt-20 justify-between items-center mb-6">
@@ -176,6 +193,12 @@ export default function Dashboard() {
             className="bg-gray-700 text-white px-4 py-2 rounded-lg"
           >
             Set Balance
+          </Button>
+          <Button
+            onClick={() => setIsBudgetDialogOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+          >
+            Set Budget
           </Button>
         </div>
       </div>
@@ -201,6 +224,31 @@ export default function Dashboard() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsBalanceDialogOpen(false)} className="text-white">Cancel</Button>
             <Button onClick={handleBalanceUpdate} className="bg-blue-600 hover:bg-blue-700 text-white">Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
+        <DialogContent className="bg-gray-800 border border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Set Monthly Budget</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Enter your monthly budget to track your spending.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Label htmlFor="budget" className="text-white">Monthly Budget (₹)</Label>
+            <Input
+              id="budget"
+              type="number"
+              defaultValue={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="bg-gray-700 text-white"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBudgetDialogOpen(false)} className="text-white">Cancel</Button>
+            <Button onClick={() => handleBudgetUpdate(budget)} className="bg-green-600 hover:bg-green-700 text-white">Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
