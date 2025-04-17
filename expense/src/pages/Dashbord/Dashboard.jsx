@@ -14,6 +14,7 @@ import {
   getDoc,
   setDoc
 } from "firebase/firestore";
+import { useSendBudgetAlertEmail } from "../../pages/EmailJs/EmailService";
 import VoiceInputButton from "../../Ui/ui-custom/VoiceInputButton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../Ui/ui/dialog";
 import { Input } from "../../Ui/ui/input";
@@ -22,10 +23,12 @@ import { Label } from "../../Ui/ui/label";
 export default function Dashboard() {
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isBalanceDialogOpen, setIsBalanceDialogOpen] = useState(false);
-  const [balance, setBalance] = useState(5840.27);
-  const [newBalance, setNewBalance] = useState("5840.27");
+  const [balance, setBalance] = useState(0.00);
+  const [newBalance, setNewBalance] = useState("0.00");
   const [budget, setBudget] = useState(2500.0);
   const [expenses, setExpenses] = useState([]);
+  const sendBudgetAlertEmail = useSendBudgetAlertEmail();
+
   const [expenseFormData, setExpenseFormData] = useState({
     description: '',
     amount: '',
@@ -53,6 +56,13 @@ export default function Dashboard() {
   }, [useremail]);
 
   const addNewExpense = async (expense) => {
+    console.log('Adding new expense:', expense);
+    
+    if (!user?.email) {
+      console.error('No user email available');
+      return;
+    }
+
     const newExpense = {
       description: expense.description,
       amount: parseFloat(expense.amount),
@@ -62,18 +72,60 @@ export default function Dashboard() {
 
     const updatedExpenses = [newExpense, ...expenses];
     const updatedBalance = balance - newExpense.amount;
-    await setDoc(doc(db, "expenses", useremail), { items: updatedExpenses, balance: updatedBalance });
 
-    setExpenses(updatedExpenses);
-    setBalance(updatedBalance);
-    setIsExpenseDialogOpen(false);
-    setExpenseFormData({
-      description: '',
-      amount: '',
-      category: '',
-      date: new Date().toISOString().split('T')[0]
+    console.log('Updated expenses:', updatedExpenses);
+    console.log('Updated balance:', updatedBalance.toFixed(2));
+
+    // Get current month's expenses
+    const currentMonth = new Date().getMonth();
+    const monthlyExpenses = updatedExpenses.filter(exp => {
+      const expDate = new Date(exp.date);
+      return expDate.getMonth() === currentMonth;
     });
+
+    console.log('Monthly expenses:', monthlyExpenses);
+
+    // Calculate monthly expenses percentage
+    const monthlyExpensesTotal = monthlyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const monthlyPercentage = (monthlyExpensesTotal / budget) * 100;
+
+    console.log('Monthly expenses total:', monthlyExpensesTotal.toFixed(2));
+    console.log('Monthly percentage:', monthlyPercentage.toFixed(2) + '%');
+    console.log('Budget:', budget.toFixed(2));
+
+    // Send email if monthly expenses exceed 80%
+    if (monthlyPercentage >= 80 && budget > 0) {
+      console.log('Monthly budget threshold reached!');
+      
+      try {
+        const result = await sendBudgetAlertEmail(budget, monthlyExpenses);
+        console.log('Email send result:', result);
+      } catch (error) {
+        console.error('Error sending budget alert:', error);
+      }
+    }
+
+    try {
+      await setDoc(doc(db, "expenses", user?.email), {
+        items: updatedExpenses,
+        balance: updatedBalance,
+      });
+      console.log('Successfully updated database');
+
+      setExpenses(updatedExpenses);
+      setBalance(updatedBalance);
+      setIsExpenseDialogOpen(false);
+      setExpenseFormData({
+        description: '',
+        amount: '',
+        category: '',
+        date: new Date().toISOString().split('T')[0]
+      });
+    } catch (error) {
+      console.error('Error updating database:', error);
+    }
   };
+
 
   const deleteExpense = async (index, amount) => {
     const updatedExpenses = expenses.filter((_, i) => i !== index);
