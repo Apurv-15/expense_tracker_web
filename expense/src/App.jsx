@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Navbar from "./pages/Navbar/Navbar";
 import "./App.css";
@@ -12,14 +12,43 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { Navigate } from "react-router-dom";
 import LoadingSpinner from "./pages/LoadingSpinner/LoadingSpinner";
 
-// Lazy load components
-const Body = lazy(() => import("./pages/MainBody/Body"));
-const Dashboard = lazy(() => import("./pages/Dashbord/Dashboard"));
-const Insights = lazy(() => import("./pages/Dashbord/insights/Insights"));
+// Add animation styles
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.8, ease: "easeOut" }
+};
+
+// Lazy load components with delay
+const Body = lazy(() => 
+  new Promise(resolve => setTimeout(resolve, 3000)).then(() => 
+    import("./pages/MainBody/Body")
+  )
+);
+const Dashboard = lazy(() => 
+  new Promise(resolve => setTimeout(resolve, 3000)).then(() => 
+    import("./pages/Dashbord/Dashboard")
+  )
+);
+const Insights = lazy(() => 
+  new Promise(resolve => setTimeout(resolve, 3000)).then(() => 
+    import("./pages/Dashbord/insights/Insights")
+  )
+);
 
 function App() {
   const { theme } = useTheme();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const [isContentVisible, setIsContentVisible] = useState(false);
+
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+      setIsContentVisible(true);
+    }, 3000); // Match the lazy load delay
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <ThemeProvider>
@@ -34,22 +63,58 @@ function App() {
 
               <Suspense fallback={<LoadingSpinner />}>
                 <Routes>
-                  <Route path="/" element={<Body />} />
+                  <Route 
+                    path="/" 
+                    element={
+                      <div 
+                        style={{ 
+                          ...fadeIn.initial,
+                          opacity: isContentVisible ? 1 : 0,
+                          transform: `translateY(${isContentVisible ? 0 : 20}px)`
+                        }}
+                        className="transition-all duration-800 ease-out"
+                      >
+                        <Body />
+                      </div>
+                    }
+                  />
                   <Route
                     path="/dashboard"
-                    element={isAuthenticated ? (
-                      <Dashboard />
-                    ) : (
-                      <Navigate to="/" />
-                    )}
+                    element={
+                      isAuthenticated ? (
+                        <div 
+                          style={{ 
+                            ...fadeIn.initial,
+                            opacity: isContentVisible ? 1 : 0,
+                            transform: `translateY(${isContentVisible ? 0 : 20}px)`
+                          }}
+                          className="transition-all duration-800 ease-out"
+                        >
+                          <Dashboard />
+                        </div>
+                      ) : (
+                        <Navigate to="/" />
+                      )
+                    }
                   />
                   <Route
                     path="/insights"
-                    element={isAuthenticated ? (
-                      <Insights />
-                    ) : (
-                      <Navigate to="/" />
-                    )}
+                    element={
+                      isAuthenticated ? (
+                        <div 
+                          style={{ 
+                            ...fadeIn.initial,
+                            opacity: isContentVisible ? 1 : 0,
+                            transform: `translateY(${isContentVisible ? 0 : 20}px)`
+                          }}
+                          className="transition-all duration-800 ease-out"
+                        >
+                          <Insights />
+                        </div>
+                      ) : (
+                        <Navigate to="/" />
+                      )
+                    }
                   />
                 </Routes>
               </Suspense>

@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Popover, PopoverContent, PopoverTrigger } from '../../Ui/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '../../lib/utils'; // Ensure correct import path
+import { cn } from '../../lib/utils';
 import React from "react";
+import VoiceInputButton from './VoiceInputButton';
 
 export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
   const [description, setDescription] = useState('');
@@ -22,6 +23,43 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
     category: '',
     date: '',
   });
+
+  // Handle voice input
+  const handleVoiceInput = (transcription) => {
+    // Try to extract amount and description from transcription
+    const amountMatch = transcription.match(/\b\d+(?:\.\d+)?\b/);
+    const amountValue = amountMatch ? amountMatch[0] : '';
+    
+    // Extract description - look for words after 'spend', 'spent', 'buy', 'bought', etc.
+    const descriptionKeywords = ['spend', 'spent', 'buy', 'bought', 'pay', 'paid'];
+    let descriptionText = '';
+    
+    // Try to find any of the keywords
+    for (const keyword of descriptionKeywords) {
+      const keywordIndex = transcription.toLowerCase().indexOf(keyword);
+      if (keywordIndex !== -1) {
+        // Get text after the keyword
+        const textAfterKeyword = transcription.slice(keywordIndex + keyword.length).trim();
+        
+        // Remove amount from the text if it exists
+        if (amountMatch) {
+          descriptionText = textAfterKeyword.replace(amountMatch[0], '').trim();
+        } else {
+          descriptionText = textAfterKeyword;
+        }
+        break;
+      }
+    }
+
+    // If no keyword was found, use the entire text as description
+    if (!descriptionText) {
+      descriptionText = transcription.replace(amountValue, '').trim();
+    }
+
+    // Update form fields
+    setAmount(amountValue);
+    setDescription(descriptionText);
+  };
 
   const validateForm = () => {
     const newErrors = {
@@ -63,6 +101,11 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          {/* Voice Input Button */}
+          <div className="flex justify-end mb-4">
+            <VoiceInputButton onTranscriptionComplete={handleVoiceInput} />
+          </div>
+
           {/* Description Field */}
           <div className="grid gap-2">
             <Label htmlFor="description" className="text-gray-300">Description</Label>
