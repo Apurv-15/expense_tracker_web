@@ -127,13 +127,13 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
                   {date ? format(date, 'PPP') : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-gray-800 text-white border-gray-700" align="start">
+              <PopoverContent className="w-auto p-0 bg-black border border-gray-800 shadow-lg rounded-lg" align="start">
                 <Calendar
                   mode="single"
                   selected={date}
                   onSelect={(selectedDate) => setDate(selectedDate || new Date())}
                   initialFocus
-                  className="p-3 pointer-events-auto bg-gray-800 text-white"
+                  className="w-full"
                 />
               </PopoverContent>
             </Popover>

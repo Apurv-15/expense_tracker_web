@@ -23,7 +23,7 @@ interface ExpenseBarChartProps {
 const ExpenseBarChart = ({ data, formatCurrency }: ExpenseBarChartProps) => {
   // Generate gradient colors for bars
   const COLORS = [
-    '#0088FE',
+    '#3c51b9',
     '#00C49F',
     '#FFBB28',
     '#FF8042',
@@ -44,10 +44,22 @@ const ExpenseBarChart = ({ data, formatCurrency }: ExpenseBarChartProps) => {
             dataKey="name" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#ffffff' }}
-            fontSize={12}
-            angle={-45}
-            textAnchor="end"
+            tick={{ 
+              fill: '#ffffff',
+              fontSize: 12,
+              fontWeight: 400
+            }}
+            label={{
+              value: 'Date',
+              position: 'bottom',
+              fill: '#ffffff',
+              fontSize: 12,
+              fontWeight: 500
+            }}
+            tickFormatter={(value) => {
+              const date = new Date(value);
+              return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+            }}
           />
           <YAxis 
             axisLine={false} 
