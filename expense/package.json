@@ -30,6 +30,7 @@
     "date-fns": "^2.29.3",
     "firebase": "^11.5.0",
     "framer-motion": "^12.4.5",
+    "gsap": "^3.12.7",
     "install": "^0.13.0",
     "lamejs": "^1.2.0",
     "lottie-react": "^2.4.1",

@@ -10,10 +10,11 @@
     align-items: center;
     justify-content: center;
     background-color: black;
+    transition: opacity 4s ease-in-out;
   }
   
   .pl__ring {
-    animation: ringA 2s linear infinite;
+    animation: ringA 4s linear infinite;
   }
   
   .pl__ring--a {
