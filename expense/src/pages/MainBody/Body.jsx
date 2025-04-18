@@ -8,6 +8,7 @@ import ComingFeature from "../Coming_features/ComingFeature";
 import JoinNow from "../JoinNow/JoinNow";
 import BentoImp from "../Features/BentoImp";
 import SmoothScroll from "../../gsap/SmoothScroll";
+import StickyScroll from "../../pages/DetaileFeature/StickyScrollRevealDemo";
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
@@ -16,7 +17,8 @@ export const Body = () => {
     <SmoothScroll>
       <HeroScrollDemo />
       <BentoImp />
-      <JoinNow />
+      {/* <JoinNow /> */}
+      <StickyScroll />
       <ComingFeature />
     </SmoothScroll>
     
