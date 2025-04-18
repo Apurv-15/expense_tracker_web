@@ -50,6 +50,14 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  const ProtectedRoute = ({ children }) => {
+    if (!isAuthenticated) {
+      loginWithRedirect();
+      return null; // Don't render anything while redirecting
+    }
+    return children;
+  };
+
   return (
     <ThemeProvider>
       <div className={`app-container ${theme === "dark" ? "dark" : ""}`}>
@@ -63,25 +71,11 @@ function App() {
 
               <Suspense fallback={<LoadingSpinner />}>
                 <Routes>
-                  <Route 
-                    path="/" 
-                    element={
-                      <div 
-                        style={{ 
-                          ...fadeIn.initial,
-                          opacity: isContentVisible ? 1 : 0,
-                          transform: `translateY(${isContentVisible ? 0 : 20}px)`
-                        }}
-                        className="transition-all duration-800 ease-out"
-                      >
-                        <Body />
-                      </div>
-                    }
-                  />
+                  <Route path="/" element={<Body />} />
                   <Route
                     path="/dashboard"
                     element={
-                      isAuthenticated ? (
+                      <ProtectedRoute>
                         <div 
                           style={{ 
                             ...fadeIn.initial,
@@ -92,15 +86,13 @@ function App() {
                         >
                           <Dashboard />
                         </div>
-                      ) : (
-                        <Navigate to="/" />
-                      )
+                      </ProtectedRoute>
                     }
                   />
                   <Route
                     path="/insights"
                     element={
-                      isAuthenticated ? (
+                      <ProtectedRoute>
                         <div 
                           style={{ 
                             ...fadeIn.initial,
@@ -111,9 +103,7 @@ function App() {
                         >
                           <Insights />
                         </div>
-                      ) : (
-                        <Navigate to="/" />
-                      )
+                      </ProtectedRoute>
                     }
                   />
                 </Routes>
