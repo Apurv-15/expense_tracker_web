@@ -16,7 +16,7 @@ import LoadingSpinner from "./pages/LoadingSpinner/LoadingSpinner";
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: "easeOut" }
+  transition: { duration: 1.0, ease: "easeOut" }
 };
 
 // Lazy load components with delay
@@ -31,7 +31,7 @@ const Dashboard = lazy(() =>
   )
 );
 const Insights = lazy(() => 
-  new Promise(resolve => setTimeout(resolve, 3000)).then(() => 
+  new Promise(resolve => setTimeout(resolve, 1000)).then(() => 
     import("./pages/Dashbord/insights/Insights")
   )
 );
