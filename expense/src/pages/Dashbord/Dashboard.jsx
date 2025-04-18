@@ -181,7 +181,7 @@ export default function Dashboard() {
       <div className="flex mt-20 justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">Expense Dashboard</h1>
         <div className="flex gap-3">
-          <VoiceInputButton onTranscriptionComplete={handleVoiceTranscription} />
+        
           <Button
             onClick={() => setIsExpenseDialogOpen(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"

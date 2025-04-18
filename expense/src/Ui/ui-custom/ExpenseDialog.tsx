@@ -12,6 +12,7 @@ import { cn } from '../../lib/utils';
 import React from "react";
 import VoiceInputButton from './VoiceInputButton';
 
+
 export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -24,44 +25,60 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
     date: '',
   });
 
-  // Handle voice input
   const handleVoiceInput = (transcription) => {
-    // Try to extract amount and description from transcription
-    const amountMatch = transcription.match(/\b\d+(?:\.\d+)?\b/);
+    // Clean and prepare the transcription
+    const cleanedTranscription = transcription.toLowerCase().trim();
+    
+    // Extract amount using regex
+    const amountMatch = cleanedTranscription.match(/\b\d+(?:\.\d+)?\b/);
     const amountValue = amountMatch ? amountMatch[0] : '';
     
-    // Extract description - look for words after 'spend', 'spent', 'buy', 'bought', etc.
-    const descriptionKeywords = ['spend', 'spent', 'buy', 'bought', 'pay', 'paid'];
+    // Extract description - look for common expense-related keywords
+    const keywords = ['spend', 'spent', 'buy', 'bought', 'pay', 'paid', 'for', 'on'];
     let descriptionText = '';
     
     // Try to find any of the keywords
-    for (const keyword of descriptionKeywords) {
-      const keywordIndex = transcription.toLowerCase().indexOf(keyword);
+    let keywordFound = false;
+    for (const keyword of keywords) {
+      const keywordIndex = cleanedTranscription.indexOf(keyword);
       if (keywordIndex !== -1) {
-        // Get text after the keyword
-        const textAfterKeyword = transcription.slice(keywordIndex + keyword.length).trim();
+        keywordFound = true;
+        // Get text before and after the keyword
+        const textBefore = cleanedTranscription.substring(0, keywordIndex).trim();
+        const textAfter = cleanedTranscription.substring(keywordIndex + keyword.length).trim();
         
-        // Remove amount from the text if it exists
-        if (amountMatch) {
-          descriptionText = textAfterKeyword.replace(amountMatch[0], '').trim();
-        } else {
-          descriptionText = textAfterKeyword;
-        }
+        // Combine both parts, removing the amount if it exists
+        descriptionText = `${textBefore} ${textAfter}`.replace(amountValue, '').trim();
         break;
       }
     }
 
-    // If no keyword was found, use the entire text as description
-    if (!descriptionText) {
-      descriptionText = transcription.replace(amountValue, '').trim();
+    // If no keyword was found, try to use the entire text as description
+    if (!keywordFound && cleanedTranscription) {
+      // Remove amount and common words like 'rupees', 'rs', '₹'
+      descriptionText = cleanedTranscription
+        .replace(amountValue, '')
+        .replace(/(?:rupees?|rs|₹)/gi, '')
+        .trim();
     }
 
-    // Update form fields
-    setAmount(amountValue);
-    setDescription(descriptionText);
+    // Remove any remaining numbers and extra spaces
+    descriptionText = descriptionText
+      .replace(/\d+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Update the form fields
+    if (amountValue) {
+      setAmount(amountValue);
+    }
+    if (descriptionText) {
+      setDescription(descriptionText);
+    }
   };
 
-  const validateForm = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     const newErrors = {
       description: description.trim() === '' ? 'Description is required' : '',
       amount: !amount || isNaN(Number(amount)) ? 'Valid amount is required' : '',
@@ -70,11 +87,7 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
     };
 
     setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error);
-  };
-
-  const handleSubmit = () => {
-    if (validateForm()) {
+    if (!Object.values(newErrors).some(error => error)) {
       onSubmit({
         description,
         amount: parseFloat(amount),
@@ -92,104 +105,151 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-card backdrop-blur-md border-border/50 sm:max-w-[425px] bg-gray-900 text-white">
-        <DialogHeader>
-          <DialogTitle className="text-lg text-white">Add New Expense</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            Enter the details of your expense. Click save when you're done.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4 py-4">
-          {/* Voice Input Button */}
-          <div className="flex justify-end mb-4">
-            <VoiceInputButton onTranscriptionComplete={handleVoiceInput} />
+      <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none">
+        <div className="relative overflow-hidden">
+          {/* Glowing Edge Effect */}
+       
+            <div className="absolute inset-0 animate-glow-edge" style={{
+              background: `linear-gradient(90deg, 
+                rgba(255, 0, 0, 0.2) 0%,
+                rgba(0, 255, 0, 0.2) 25%,
+                rgba(0, 0, 255, 0.2) 50%,
+                rgba(255, 0, 255, 0.2) 75%,
+                rgba(255, 0, 0, 0.2) 100%
+              )`
+            }} />
+            {/* Additional glowing effects */}
+            <div className="absolute inset-0 rounded-xl animate-glow-border" style={{
+              background: `linear-gradient(45deg, 
+                rgba(255, 0, 0, 0.1) 0%,
+                rgba(0, 255, 0, 0.1) 25%,
+                rgba(0, 0, 255, 0.1) 50%,
+                rgba(255, 0, 255, 0.1) 75%,
+                rgba(255, 0, 0, 0.1) 100%
+              )`
+            }} />
           </div>
 
-          {/* Description Field */}
-          <div className="grid gap-2">
-            <Label htmlFor="description" className="text-gray-300">Description</Label>
-            <Input
-              id="description"
-              placeholder="What did you spend on?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={`bg-gray-800 text-white ${errors.description ? 'border-red-500' : ''}`}
-            />
-            {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
-          </div>
+          <div className="relative rounded-xl dark:bg-gray-800 shadow-xl p-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl border-nonefont-bold text-gray-900 dark:text-white mb-2">
+                Add Expense
+              </DialogTitle>
+              <DialogDescription className="text-gray-600 dark:text-gray-300">
+                Add your expenses with voice input
+              </DialogDescription>
+            </DialogHeader>
 
-          {/* Amount Field */}
-          <div className="grid gap-2">
-            <Label htmlFor="amount" className="text-gray-300">Amount (₹)</Label>
-            <Input
-              id="amount"
-              placeholder="0.00"
-              type="number"
-              step="0.01"
-              min="0"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className={`bg-gray-800 text-white ${errors.amount ? 'border-red-500' : ''}`}
-            />
-            {errors.amount && <p className="text-xs text-red-500">{errors.amount}</p>}
-          </div>
-
-          {/* Category Selection */}
-          <div className="grid gap-2">
-            <Label htmlFor="category" className="text-gray-300">Category</Label>
-            <Select onValueChange={setCategory}>
-              <SelectTrigger className={`bg-gray-800 text-white ${errors.category ? 'border-red-500' : ''}`}>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 text-white">
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat} className="hover:bg-gray-700">
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.category && <p className="text-xs text-red-500">{errors.category}</p>}
-          </div>
-
-          {/* Date Selection */}
-          <div className="grid gap-2">
-            <Label htmlFor="date" className="text-gray-300">Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal bg-gray-800 text-white',
-                    !date && 'text-gray-400',
-                    errors.date ? 'border-red-500' : ''
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div className="relative">
+                  <Label htmlFor="description" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Description
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Enter description..."
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <VoiceInputButton onTranscriptionComplete={handleVoiceInput} />
+                  </div>
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-500">{errors.description}</p>
                   )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4 text-white" />
-                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-black border border-gray-800 shadow-lg rounded-lg" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(selectedDate) => setDate(selectedDate || new Date())}
-                  initialFocus
-                  className="w-full"
-                />
-              </PopoverContent>
-            </Popover>
-            {errors.date && <p className="text-xs text-red-500">{errors.date}</p>}
-          </div>
-        </div>
+                </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="bg-gray-700 text-white hover:bg-gray-600">
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} className="bg-blue-600 text-white hover:bg-blue-500">Save Expense</Button>
-        </DialogFooter>
+                <div>
+                  <Label htmlFor="amount" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Amount (₹)
+                  </Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {errors.amount && (
+                    <p className="mt-1 text-sm text-red-500">{errors.amount}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="category" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Category
+                  </Label>
+                  <Select
+                    value={category}
+                    onValueChange={setCategory}
+                  >
+                    <SelectTrigger className="w-full rounded-lg border border-gray-200 dark:border-gray-700 dark:text-white">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-gray-800 dark:text-white">
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat} className="dark:text-white dark:focus:bg-gray-700">
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.category && (
+                    <p className="mt-1 text-sm text-red-500">{errors.category}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="date" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Date
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal rounded-lg border border-gray-200 dark:border-gray-700",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 dark:bg-gray-800" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={(selectedDate) => {
+                          if (selectedDate) {
+                            setDate(selectedDate);
+                          }
+                        }}
+                        required
+                        initialFocus
+                        className="p-3 pointer-events-auto dark:bg-gray-800 dark:text-white"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {errors.date && (
+                    <p className="mt-1 text-sm text-red-500">{errors.date}</p>
+                  )}
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" className="w-full rounded-lg bg-blue-500 hover:bg-blue-600">
+                  Add Expense
+                </Button>
+              </DialogFooter>
+            </form>
+          </div>
+      
       </DialogContent>
     </Dialog>
   );
