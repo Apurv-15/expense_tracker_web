@@ -191,39 +191,51 @@ export default function Dashboard() {
   };
 
   const handleBalanceUpdate = async () => {
-    if (!useremail) return;
-    
-    const parsedBalance = parseFloat(balanceInput);
-    if (isNaN(parsedBalance)) return;
-    
-    await setDoc(doc(db, "expenses", useremail), {
-      items: expenses,
-      balance: parsedBalance,
-      budget: budget // ensure budget is preserved in DB
-    });
-    
-    setBalance(parsedBalance);
-    setIsBalanceDialogOpen(false);
+    try {
+      const newBalance = parseFloat(balanceInput);
+      if (isNaN(newBalance)) return;
+
+      await setDoc(doc(db, "expenses", useremail), {
+        balance: newBalance
+      }, { merge: true });
+
+      setBalance(newBalance);
+      setBalanceInput(newBalance.toString());
+      setIsBalanceDialogOpen(false);
+
+      // Update tutorial step if we're in tutorial mode and on step 1
+      if (isTutorialOpen && tutorialStep === 1) {
+        setTutorialStep(2);
+      }
+    } catch (error) {
+      console.error('Error updating balance:', error);
+    }
+  };
+
+  const handleBudgetUpdate = async () => {
+    try {
+      const newBudget = parseFloat(budgetInput);
+      if (isNaN(newBudget)) return;
+
+      await setDoc(doc(db, "expenses", useremail), {
+        budget: newBudget
+      }, { merge: true });
+
+      setBudget(newBudget);
+      setBudgetInput(newBudget.toString());
+      setIsBudgetDialogOpen(false);
+
+      // Update tutorial step if we're in tutorial mode and on step 2
+      if (isTutorialOpen && tutorialStep === 2) {
+        setTutorialStep(3);
+      }
+    } catch (error) {
+      console.error('Error updating budget:', error);
+    }
   };
 
   const handleBalanceInputChange = (e) => {
     setBalanceInput(e.target.value);
-  };
-
-  const handleBudgetUpdate = async (newBudget) => {
-    if (!useremail) return;
-    
-    const parsedBudget = parseFloat(newBudget);
-    if (isNaN(parsedBudget)) return;
-    
-    await setDoc(doc(db, "expenses", useremail), {
-      items: expenses,
-      balance: balance,
-      budget: parsedBudget
-    });
-    
-    setBudget(parsedBudget);
-    setIsBudgetDialogOpen(false);
   };
 
   const handleBudgetInputChange = (e) => {
@@ -285,101 +297,119 @@ export default function Dashboard() {
     <DashboardLayout className="min-h-screen p-6">
       {isTutorialOpen && (
         <Dialog open={isTutorialOpen} onOpenChange={setIsTutorialOpen}>
-        <DialogContent className="bg-[#0E1526] border border-[#2A2A2A] shadow-lg text-white">
-          <DialogHeader>
-            <DialogTitle>Welcome to Expense Tracker!</DialogTitle>
-            <DialogDescription>
-              Let's get started with setting up your account.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4">
-            {tutorialStep === 1 && (
-              <>
-                <p className="text-blue-300">Step 1 of 3</p>
-                <p className="text-white">First, let's set your initial balance. This will help track your expenses accurately.</p>
-                <Button onClick={() => setIsBalanceDialogOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
-                  Set Initial Balance
-                </Button>
-              </>
-            )}
-            {tutorialStep === 2 && (
-              <>
-                <p className="text-blue-300">Step 2 of 3</p>
-                <p className="text-white">Now, let's set your monthly budget. This will help you stay on track with your spending.</p>
-                <Button onClick={() => setIsBudgetDialogOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
-                  Set Monthly Budget
-                </Button>
-              </>
-            )}
-            {tutorialStep === 3 && (
-              <>
-                <p className="text-blue-300">Step 3 of 3</p>
-                <p className="text-white">Let's add your first expense. This will help you start tracking your spending.</p>
-                <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
-                  Add First Expense
-                </Button>
-              </>
-            )}
-          </div>
-          <DialogFooter>
-            <div className="flex justify-between w-full">
-              {tutorialStep > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={handleTutorialBack}
-                  className="w-1/3"
-                >
-                  Back
-                </Button>
+          <DialogContent className="bg-[#0E1526] border border-[#2A2A2A] shadow-lg text-white max-w-2xl mx-4 md:mx-8 lg:mx-12 sm:mx-auto sm:mt-20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold mb-4">Welcome to Expense Tracker!</DialogTitle>
+              <DialogDescription className="text-gray-300 mb-8">
+                Let's get you started with your financial journey!
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {tutorialStep === 1 && (
+                <div className="p-4 bg-[#1A233A] rounded-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <p className="text-blue-300">Step 1 of 3</p>
+                    <p className="text-white">Set Your Initial Balance</p>
+                  </div>
+                  <p className="text-gray-400 mb-4">Enter your current balance to start tracking your expenses.</p>
+                  <Button onClick={() => setIsBalanceDialogOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
+                    Set Balance
+                  </Button>
+                </div>
               )}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={skipTutorial}
-                >
-                  Skip Tutorial
-                </Button>
-                <Button
-                  onClick={handleTutorialNext}
-                  disabled={
-                    (tutorialStep === 1 && balance <= 0) ||
-                    (tutorialStep === 2 && budget <= 0) ||
-                    (tutorialStep === 3 && expenses.length === 0)
-                  }
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {tutorialStep === 3 ? 'Complete Tutorial' : 'Next'}
-                </Button>
-              </div>
+
+              {tutorialStep === 2 && (
+                <div className="p-4 bg-[#1A233A] rounded-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <p className="text-blue-300">Step 2 of 3</p>
+                    <p className="text-white">Set Your Monthly Budget</p>
+                  </div>
+                  <p className="text-gray-400 mb-4">Define your monthly budget to monitor your spending.</p>
+                  <Button onClick={() => setIsBudgetDialogOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
+                    Set Budget
+                  </Button>
+                </div>
+              )}
+
+              {tutorialStep === 3 && (
+                <div className="p-4 bg-[#1A233A] rounded-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <p className="text-blue-300">Step 3 of 3</p>
+                    <p className="text-white">Start Tracking Expenses</p>
+                  </div>
+                  <p className="text-gray-400 mb-4">Add your first expense to begin tracking your spending.</p>
+                  <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700">
+                    Add Expense
+                  </Button>
+                </div>
+              )}
             </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+            <DialogFooter className="mt-8 pt-4 border-t border-[#2A2A2A]">
+              <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
+                {tutorialStep > 1 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setTutorialStep(prev => prev - 1)}
+                    className="w-full sm:w-1/3 text-white"
+                  >
+                    Back
+                  </Button>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsTutorialOpen(false)}
+                  >
+                    Skip Tutorial
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (tutorialStep === 3) {
+                        setIsTutorialOpen(false);
+                      } else {
+                        setTutorialStep(prev => prev + 1);
+                      }
+                    }}
+                    disabled={
+                      (tutorialStep === 1 && balance <= 0) ||
+                      (tutorialStep === 2 && budget <= 0) ||
+                      (tutorialStep === 3 && expenses.length === 0)
+                    }
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {tutorialStep === 3 ? 'Complete Tutorial' : 'Next'}
+                  </Button>
+                </div>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
-      <div className="flex mt-20 justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">Expense Dashboard</h1>
-        <div className="flex gap-3">
-        
-          <Button
-            onClick={() => setIsExpenseDialogOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-          >
-            <Plus size={16} className="text-white" /> Add Expense
-          </Button>
-          <Button
-            onClick={() => setIsBalanceDialogOpen(true)}
-            className="bg-gray-700 text-white px-4 py-2 rounded-lg"
-          >
-            Set Balance
-          </Button>
-          <Button
-            onClick={() => setIsBudgetDialogOpen(true)}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-          >
-            Set Budget
-          </Button>
-        </div>
-      </div>
+    <div className="flex flex-col sm:flex-row justify-between items-center mb-6 mt-30">
+  <h1 className="text-2xl font-bold text-white mb-4 sm:mb-0">Expense Dashboard</h1>
+  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+    <Button
+      onClick={() => setIsExpenseDialogOpen(true)}
+      className="w-full sm:w-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm sm:text-base"
+    >
+      <Plus size={16} className="text-white" /> Add Expense
+    </Button>
+    <Button
+      onClick={() => setIsBalanceDialogOpen(true)}
+      className="w-full sm:w-auto bg-gray-700 text-white px-3 py-2 rounded-lg text-sm sm:text-base"
+    >
+      Set Balance
+    </Button>
+    <Button
+      onClick={() => setIsBudgetDialogOpen(true)}
+      className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm sm:text-base"
+    >
+      Set Budget
+    </Button>
+  </div>
+</div>
 
       <Dialog open={isBalanceDialogOpen} onOpenChange={setIsBalanceDialogOpen}>
         <DialogContent className="bg-[#0E1526] border border-[#2A2A2A] shadow-lg text-white">
@@ -440,7 +470,7 @@ export default function Dashboard() {
               Cancel
             </Button>
             <Button
-              onClick={() => handleBudgetUpdate(budgetInput)}
+              onClick={handleBudgetUpdate}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               Save
