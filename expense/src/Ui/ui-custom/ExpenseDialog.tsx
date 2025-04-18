@@ -106,33 +106,17 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none">
-        <div className="relative overflow-hidden">
-          {/* Glowing Edge Effect */}
-       
-            <div className="absolute inset-0 animate-glow-edge" style={{
-              background: `linear-gradient(90deg, 
-                rgba(255, 0, 0, 0.2) 0%,
-                rgba(0, 255, 0, 0.2) 25%,
-                rgba(0, 0, 255, 0.2) 50%,
-                rgba(255, 0, 255, 0.2) 75%,
-                rgba(255, 0, 0, 0.2) 100%
-              )`
-            }} />
-            {/* Additional glowing effects */}
-            <div className="absolute inset-0 rounded-xl animate-glow-border" style={{
-              background: `linear-gradient(45deg, 
-                rgba(255, 0, 0, 0.1) 0%,
-                rgba(0, 255, 0, 0.1) 25%,
-                rgba(0, 0, 255, 0.1) 50%,
-                rgba(255, 0, 255, 0.1) 75%,
-                rgba(255, 0, 0, 0.1) 100%
-              )`
-            }} />
+        <div className="relative overflow-hidden rounded-xl">
+          {/* Glowing RGB border effect */}
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 opacity-75 blur-lg animate-pulse"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-green-500 to-yellow-500 opacity-75 blur-lg animate-pulse" style={{ animationDelay: '1s' }}></div>
           </div>
-
-          <div className="relative rounded-xl dark:bg-gray-800 shadow-xl p-6">
+          
+          {/* Main content */}
+          <div className="relative z-10 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 m-[2px]">
             <DialogHeader>
-              <DialogTitle className="text-2xl border-nonefont-bold text-gray-900 dark:text-white mb-2">
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Add Expense
               </DialogTitle>
               <DialogDescription className="text-gray-600 dark:text-gray-300">
@@ -249,7 +233,7 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
               </DialogFooter>
             </form>
           </div>
-      
+        </div>
       </DialogContent>
     </Dialog>
   );
