@@ -21,12 +21,12 @@ const fadeIn = {
 
 // Lazy load components with delay
 const Body = lazy(() => 
-  new Promise(resolve => setTimeout(resolve, 3000)).then(() => 
+  new Promise(resolve => setTimeout(resolve, 2500)).then(() => 
     import("./pages/MainBody/Body")
   )
 );
 const Dashboard = lazy(() => 
-  new Promise(resolve => setTimeout(resolve, 3000)).then(() => 
+  new Promise(resolve => setTimeout(resolve, 2000)).then(() => 
     import("./pages/Dashbord/Dashboard")
   )
 );

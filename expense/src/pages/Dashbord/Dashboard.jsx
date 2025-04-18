@@ -60,10 +60,10 @@ export default function Dashboard() {
   }, [useremail]);
 
   const addNewExpense = async (expense) => {
-    console.log('Adding new expense:', expense);
+    // console.log('Adding new expense:', expense);
     
     if (!user?.email) {
-      console.error('No user email available');
+      // console.error('No user email available');
       return;
     }
 
@@ -77,8 +77,8 @@ export default function Dashboard() {
     const updatedExpenses = [newExpense, ...expenses];
     const updatedBalance = balance - newExpense.amount;
 
-    console.log('Updated expenses:', updatedExpenses);
-    console.log('Updated balance:', updatedBalance.toFixed(2));
+    // console.log('Updated expenses:', updatedExpenses);
+    // console.log('Updated balance:', updatedBalance.toFixed(2));
 
     // Get current month's expenses
     const currentMonth = new Date().getMonth();
@@ -87,25 +87,25 @@ export default function Dashboard() {
       return expDate.getMonth() === currentMonth;
     });
 
-    console.log('Monthly expenses:', monthlyExpenses);
+    // console.log('Monthly expenses:', monthlyExpenses);
 
     // Calculate monthly expenses percentage
     const monthlyExpensesTotal = monthlyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
     const monthlyPercentage = (monthlyExpensesTotal / budget) * 100;
 
-    console.log('Monthly expenses total:', monthlyExpensesTotal.toFixed(2));
-    console.log('Monthly percentage:', monthlyPercentage.toFixed(2) + '%');
-    console.log('Budget:', budget.toFixed(2));
+    // console.log('Monthly expenses total:', monthlyExpensesTotal.toFixed(2));
+    // console.log('Monthly percentage:', monthlyPercentage.toFixed(2) + '%');
+    // console.log('Budget:', budget.toFixed(2));
 
     // Send email if monthly expenses exceed 80%
     if (monthlyPercentage >= 80 && budget > 0) {
-      console.log('Monthly budget threshold reached!');
+      // console.log('Monthly budget threshold reached!');
       
       try {
         const result = await sendBudgetAlertEmail(budget, monthlyExpenses);
-        console.log('Email send result:', result);
+        // console.log('Email send result:', result);
       } catch (error) {
-        console.error('Error sending budget alert:', error);
+        // console.error('Error sending budget alert:', error);
       }
     }
 
@@ -115,7 +115,7 @@ export default function Dashboard() {
         balance: updatedBalance,
         budget: budget // ensure budget is preserved in DB
       });
-      console.log('Successfully updated database');
+      // console.log('Successfully updated database');
 
       setExpenses(updatedExpenses);
       setBalance(updatedBalance);
@@ -127,7 +127,7 @@ export default function Dashboard() {
         date: new Date().toISOString().split('T')[0]
       });
     } catch (error) {
-      console.error('Error updating database:', error);
+      // console.error('Error updating database:', error);
     }
   };
 
