@@ -16,7 +16,7 @@ import LoadingSpinner from "./pages/LoadingSpinner/LoadingSpinner";
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 1.0, ease: "easeOut" }
+  transition: { duration: 1.5, ease: "easeOut" }
 };
 
 // Lazy load components with delay
