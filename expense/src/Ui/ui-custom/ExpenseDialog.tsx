@@ -28,46 +28,87 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
   const handleVoiceInput = (transcription) => {
     // Clean and prepare the transcription
     const cleanedTranscription = transcription.toLowerCase().trim();
+    console.log("Original transcription:", cleanedTranscription);
     
-    // Extract amount using regex
-    const amountMatch = cleanedTranscription.match(/\b\d+(?:\.\d+)?\b/);
-    const amountValue = amountMatch ? amountMatch[0] : '';
+    // Extract amount using regex - look for numbers with optional decimal points
+    // Also look for numbers preceded by currency indicators or followed by them
+    // This improved regex handles various ways of saying amounts
+    const amountRegex = /(?:(?:rs|rupees?|₹|inr)\s*)(\d+(?:\.\d+)?)|\b(\d+(?:\.\d+)?)\s*(?:rs|rupees?|₹|inr|bucks|dollars?)?\b/i;
+    const amountMatch = cleanedTranscription.match(amountRegex);
     
-    // Extract description - look for common expense-related keywords
-    const keywords = ['spend', 'spent', 'buy', 'bought', 'pay', 'paid', 'for', 'on'];
+    // Get the actual number from the match groups
+    let amountValue = '';
+    if (amountMatch) {
+      // The match could be in group 1 or 2 depending on the pattern matched
+      amountValue = amountMatch[1] || amountMatch[2] || amountMatch[0].replace(/[^\d.]/g, '');
+    }
+    
+    console.log("Detected amount:", amountValue);
+    
+    // Extract description using common patterns in expense descriptions
     let descriptionText = '';
     
-    // Try to find any of the keywords
-    let keywordFound = false;
-    for (const keyword of keywords) {
-      const keywordIndex = cleanedTranscription.indexOf(keyword);
-      if (keywordIndex !== -1) {
-        keywordFound = true;
-        // Get text before and after the keyword
-        const textBefore = cleanedTranscription.substring(0, keywordIndex).trim();
-        const textAfter = cleanedTranscription.substring(keywordIndex + keyword.length).trim();
-        
-        // Combine both parts, removing the amount if it exists
-        descriptionText = `${textBefore} ${textAfter}`.replace(amountValue, '').trim();
+    // Common patterns for expense descriptions
+    const patterns = [
+      // "Spent X on Y" pattern
+      /(?:spent|spend|paid|pay|bought|buy)\s+(?:\d+|(?:rs|rupees?|₹|inr)\s*\d+|\d+\s*(?:rs|rupees?|₹|inr))\s+(?:on|for)\s+(.+?)(?:\s+(?:at|in|from)\s+|$)/i,
+      // "X for Y" pattern
+      /(?:\d+|(?:rs|rupees?|₹|inr)\s*\d+|\d+\s*(?:rs|rupees?|₹|inr))\s+(?:on|for)\s+(.+?)(?:\s+(?:at|in|from)\s+|$)/i,
+      // "Y costs X" pattern
+      /(.+?)\s+(?:costs?|price|amount)\s+(?:\d+|(?:rs|rupees?|₹|inr)\s*\d+|\d+\s*(?:rs|rupees?|₹|inr))/i
+    ];
+    
+    // Try each pattern to extract description
+    for (const pattern of patterns) {
+      const match = cleanedTranscription.match(pattern);
+      if (match && match[1]) {
+        descriptionText = match[1].trim();
+        console.log("Pattern matched:", pattern, "Description:", descriptionText);
         break;
       }
     }
-
-    // If no keyword was found, try to use the entire text as description
-    if (!keywordFound && cleanedTranscription) {
-      // Remove amount and common words like 'rupees', 'rs', '₹'
-      descriptionText = cleanedTranscription
-        .replace(amountValue, '')
-        .replace(/(?:rupees?|rs|₹)/gi, '')
-        .trim();
+    
+    // If no pattern matched, fall back to keyword-based extraction
+    if (!descriptionText) {
+      const keywords = ['spend', 'spent', 'buy', 'bought', 'pay', 'paid', 'for', 'on', 'purchase'];
+      
+      // Try to find any of the keywords
+      for (const keyword of keywords) {
+        const keywordIndex = cleanedTranscription.indexOf(keyword);
+        if (keywordIndex !== -1) {
+          // Get text before and after the keyword
+          const textBefore = cleanedTranscription.substring(0, keywordIndex).trim();
+          const textAfter = cleanedTranscription.substring(keywordIndex + keyword.length).trim();
+          
+          // Combine both parts, removing the amount with currency indicators
+          descriptionText = `${textBefore} ${textAfter}`
+            .replace(/\b\d+(?:\.\d+)?\s*(?:rs|rupees?|₹|inr)?\b/gi, '')
+            .replace(/(?:rs|rupees?|₹|inr)\s*\d+(?:\.\d+)?\b/gi, '')
+            .trim();
+          console.log("Keyword matched:", keyword, "Description:", descriptionText);
+          break;
+        }
+      }
     }
 
-    // Remove any remaining numbers and extra spaces
+    // If still no description, use the entire text as description after removing amount
+    if (!descriptionText && cleanedTranscription) {
+      // Remove amount with currency indicators
+      descriptionText = cleanedTranscription
+        .replace(/\b\d+(?:\.\d+)?\s*(?:rs|rupees?|₹|inr)?\b/gi, '')
+        .replace(/(?:rs|rupees?|₹|inr)\s*\d+(?:\.\d+)?\b/gi, '')
+        .replace(/(?:rupees?|rs|₹|inr|bucks|dollars?)/gi, '')
+        .trim();
+      console.log("Fallback description:", descriptionText);
+    }
+
+    // Clean up the description - remove extra spaces but keep meaningful text
     descriptionText = descriptionText
-      .replace(/\d+/g, '')
       .replace(/\s+/g, ' ')
       .trim();
 
+    console.log("Final processed description:", descriptionText);
+    
     // Update the form fields
     if (amountValue) {
       setAmount(amountValue);
@@ -107,10 +148,14 @@ export function ExpenseDialog({ open, onOpenChange, onSubmit, categories }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none">
         <div className="relative overflow-hidden rounded-xl">
-          {/* Glowing RGB border effect */}
+          {/* Futuristic Glowing Border Effect */}
           <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 opacity-75 blur-lg animate-pulse"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-green-500 to-yellow-500 opacity-75 blur-lg animate-pulse" style={{ animationDelay: '1s' }}></div>
+            {/* Primary glow layer */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 opacity-75 blur-lg animate-pulse"></div>
+            {/* Secondary glow layer with delay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 opacity-60 blur-xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            {/* Accent glow layer */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 opacity-40 blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
           </div>
           
           {/* Main content */}

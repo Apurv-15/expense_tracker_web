@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils';
 const VoiceInputButton = ({ onTranscriptionComplete }) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [recognitionInstance, setRecognitionInstance] = useState(null);
 
   const startListening = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -17,9 +18,12 @@ const VoiceInputButton = ({ onTranscriptionComplete }) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-IN';
+    
+    // Track the complete transcript
+    let finalTranscript = '';
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -28,9 +32,28 @@ const VoiceInputButton = ({ onTranscriptionComplete }) => {
     };
 
     recognition.onresult = (event) => {
-      const current = event.resultIndex;
-      const transcriptText = event.results[current][0].transcript;
-      setTranscript(transcriptText);
+      let interimTranscript = '';
+      finalTranscript = '';
+      
+      // Process all results, both interim and final
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcriptText = event.results[i][0].transcript;
+        
+        if (event.results[i].isFinal) {
+          finalTranscript += transcriptText;
+        } else {
+          interimTranscript += transcriptText;
+        }
+      }
+      
+      // Update the displayed transcript with both final and interim results
+      setTranscript(finalTranscript || interimTranscript);
+      
+      // Only send final transcriptions to parent component
+      if (finalTranscript.trim()) {
+        console.log("Final transcription:", finalTranscript);
+        onTranscriptionComplete(finalTranscript);
+      }
     };
 
     recognition.onerror = (event) => {
@@ -42,21 +65,23 @@ const VoiceInputButton = ({ onTranscriptionComplete }) => {
     recognition.onend = () => {
       setIsListening(false);
       
-      if (transcript) {
-        onTranscriptionComplete(transcript);
-        toast.success("Transcription complete!");
+      // If we have a final transcript when recognition ends, make sure it's sent
+      if (finalTranscript.trim() && onTranscriptionComplete) {
+        onTranscriptionComplete(finalTranscript);
       }
+      
+      toast.success("Transcription complete!");
     };
 
     recognition.start();
+    setRecognitionInstance(recognition);
   };
 
   const handleVoiceInput = () => {
-    if (isListening) {
+    if (isListening && recognitionInstance) {
       // If already listening, stop the recognition
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.stop();
+      recognitionInstance.stop();
+      setRecognitionInstance(null);
     } else {
       startListening();
     }
