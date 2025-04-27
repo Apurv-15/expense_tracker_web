@@ -14,9 +14,8 @@ root.render(
       domain="dev-64x2c7ktrwnmij7t.us.auth0.com"
       clientId="McgYV8DLt14VT2fORvF9vHEbD8igFxjU"
       authorizationParams={{
-        redirect_uri: process.env.NODE_ENV === 'production' 
-          ? 'https://expense-tracker-web-smoky.vercel.app'
-          : window.location.origin
+        redirect_uri: window.location.origin,
+        appState: { targetUrl: "/dashboard" }
       }}
       cacheLocation="localstorage"
       useRefreshTokens={true}

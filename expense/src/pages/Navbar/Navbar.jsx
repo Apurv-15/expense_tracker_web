@@ -90,7 +90,8 @@ const Navbar = () => {
             <Button 
               onClick={() => {
                 logout({
-                  returnTo: window.location.origin
+                  redirect_uri: window.location.origin,
+                  appState: { targetUrl: "/" }
                 })
               }}
               className="flex items-center justify-center h-10 px-6 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-medium transition-all hover:bg-gray-800 dark:hover:bg-gray-200"
