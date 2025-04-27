@@ -25,7 +25,7 @@ const ComingFeature = () => {
             className="w-full"
           >
             {/* Tabs List with matching background */}
-            <TabsList className="grid grid-cols-3 mb-12 bg-gray-800 dark:bg-gray-900 rounded-lg p-2">
+            <TabsList className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-12 bg-gray-800 dark:bg-gray-900 rounded-lg p-2">
               <TabsTrigger 
                 value="insights" 
                 className={`px-4 py-2 rounded-lg ${activeTab === 'insights' ? 'text-blue-500 font-semibold' : 'text-white'}`}
