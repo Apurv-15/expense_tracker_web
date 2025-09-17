@@ -2,17 +2,17 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
-// Firebase configuration
+// Firebase configuration using environment variables
 const firebaseConfig = {
-    apiKey: "AIzaSyCaSalftbxxLLUZHvNrpoWVGHeKigEYCE4",
-    authDomain: "expensetracker-e539b.firebaseapp.com",
-    databaseURL: "https://expensetracker-e539b-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "expensetracker-e539b",
-    storageBucket: "expensetracker-e539b.firebasestorage.app",
-    messagingSenderId: "549967895909",
-    appId: "1:549967895909:web:edfb7769417b4951eb558c",
-    measurementId: "G-SGPP5C68WT"
-  };
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
